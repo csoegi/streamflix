@@ -46,212 +46,17 @@ function fmt(t: number) {
 interface EmbedServer {
   id: string;
   name: string;
-  isFrench: boolean;
-  urls: {
-    movie: string;
-    tv: string;
-  };
+  embedHtml: string;
 }
 
-const availableEmbedServers: EmbedServer[] = [
-  {
-    id: "vidking",
-    name: "VidKing",
-    isFrench: false,
-    urls: {
-      movie: "https://www.vidking.net/embed/movie/{id}?color=e50914&autoPlay=true",
-      tv: "https://www.vidking.net/embed/tv/{id}/{season}/{episode}?color=e50914&autoPlay=true&nextEpisode=true",
-    },
-  },
-  {
-    id: "vsembed",
-    name: "VSEmbed",
-    isFrench: false,
-    urls: {
-      movie: "https://vsembed.su/embed/movie/{id}",
-      tv: "https://vsembed.su/embed/tv/{id}/{season}/{episode}",
-    },
-  },
-  {
-    id: "autoembed",
-    name: "AutoEmbed",
-    isFrench: false,
-    urls: {
-      movie: "https://player.autoembed.cc/embed/movie/{id}",
-      tv: "https://player.autoembed.cc/embed/tv/{id}/{season}/{episode}",
-    },
-  },
-  {
-    id: "2embed",
-    name: "2Embed",
-    isFrench: false,
-    urls: {
-      movie: "https://www.2embed.cc/embed/{id}",
-      tv: "https://www.2embed.cc/embedtv/{id}&s={season}&e={episode}",
-    },
-  },
-  {
-    id: "primewire",
-    name: "PrimeWire",
-    isFrench: false,
-    urls: {
-      movie: "https://www.primewire.tf/embed/movie?tmdb={id}",
-      tv: "https://www.primewire.tf/embed/tv?tmdb={id}&season={season}&episode={episode}",
-    },
-  },
-  {
-    id: "multiembed",
-    name: "MultiEmbed",
-    isFrench: false,
-    urls: {
-      movie: "https://multiembed.mov/?video_id={id}&tmdb=1",
-      tv: "https://multiembed.mov/?video_id={id}&tmdb=1&s={season}&e={episode}",
-    },
-  },
-  {
-    id: "videasy",
-    name: "VidEasy",
-    isFrench: false,
-    urls: {
-      movie: "https://player.videasy.net/movie/{id}",
-      tv: "https://player.videasy.net/tv/{id}/{season}/{episode}",
-    },
-  },
-  {
-    id: "smashystream",
-    name: "SmashyStream",
-    isFrench: false,
-    urls: {
-      movie: "https://embed.smashystream.com/playere.php?tmdb={id}",
-      tv: "https://embed.smashystream.com/playere.php?tmdb={id}&season={season}&episode={episode}",
-    },
-  },
-  {
-    id: "pstream",
-    name: "P-Stream",
-    isFrench: false,
-    urls: {
-      movie: "https://iframe.pstream.org/embed/tmdb-movie-{id}",
-      tv: "https://iframe.pstream.org/embed/tmdb-tv-{id}/{season}/{episode}",
-    },
-  },
-  {
-    id: "vidsrccc",
-    name: "VidSrc.cc",
-    isFrench: false,
-    urls: {
-      movie: "https://vidsrc.cc/v2/embed/movie/{id}",
-      tv: "https://vidsrc.cc/v2/embed/tv/{id}/{season}/{episode}",
-    },
-  },
-  {
-    id: "embedsu",
-    name: "Embed.su",
-    isFrench: false,
-    urls: {
-      movie: "https://embed.su/embed/movie/{id}",
-      tv: "https://embed.su/embed/tv/{id}/{season}/{episode}",
-    },
-  },
-  {
-    id: "vidsrcto",
-    name: "VidSrc.to",
-    isFrench: false,
-    urls: {
-      movie: "https://vidsrc.to/embed/movie/{id}",
-      tv: "https://vidsrc.to/embed/tv/{id}/{season}/{episode}",
-    },
-  },
-  {
-    id: "vidsrcrip",
-    name: "VidSrc.rip",
-    isFrench: false,
-    urls: {
-      movie: "https://vidsrc.rip/embed/movie/{id}",
-      tv: "https://vidsrc.rip/embed/tv/{id}/{season}/{episode}",
-    },
-  },
-  {
-    id: "vidsrcsu",
-    name: "VidSrc.su",
-    isFrench: false,
-    urls: {
-      movie: "https://vidsrc.su/embed/movie/{id}",
-      tv: "https://vidsrc.su/embed/tv/{id}/{season}/{episode}",
-    },
-  },
-  {
-    id: "vidsrcvip",
-    name: "VidSrc.vip",
-    isFrench: false,
-    urls: {
-      movie: "https://vidsrc.vip/embed/movie/{id}",
-      tv: "https://vidsrc.vip/embed/tv/{id}/{season}/{episode}",
-    },
-  },
-  {
-    id: "frembed",
-    name: "Frembed",
-    isFrench: true,
-    urls: {
-      movie: "https://frembed.cc/api/film.php?id={id}",
-      tv: "https://frembed.cc/api/serie.php?id={id}&sa={season}&epi={episode}",
-    },
-  },
-  {
-    id: "moviesapi",
-    name: "MoviesAPI",
-    isFrench: false,
-    urls: {
-      movie: "https://moviesapi.club/movie/{id}",
-      tv: "https://moviesapi.club/tv/{id}-{season}-{episode}",
-    },
-  },
-  {
-    id: "direct",
-    name: "Direct",
-    isFrench: false,
-    urls: {
-      movie: "",
-      tv: "",
-    },
-  },
-];
-
-const embedHostnames = new Set(
-  availableEmbedServers.map((server) => {
-    try {
-      return new URL(server.urls.movie).hostname;
-    } catch {
-      return server.urls.movie;
-    }
-  }),
-);
-
-function buildEmbedUrl(
-  serverId: string,
-  movieId: string,
-  season: number | undefined,
-  episode: number | undefined,
-) {
-  const server =
-    availableEmbedServers.find((item) => item.id === serverId) ?? availableEmbedServers[0];
-  const isTv = movieId.startsWith("tv-");
-  const tmdbId = isTv ? movieId.slice(3) : movieId;
-  const template = isTv ? server.urls.tv : server.urls.movie;
-  return template
-    .replace("{id}", tmdbId)
-    .replace("{season}", season != null ? String(season) : "")
-    .replace("{episode}", episode != null ? String(episode) : "");
-}
-
-function isEmbedUrl(url: string) {
-  try {
-    const hostname = new URL(url).hostname;
-    return embedHostnames.has(hostname);
-  } catch {
-    return false;
-  }
+function extractServerList(movie: any): EmbedServer[] {
+  if (!movie || !Array.isArray(movie.videoEmbeds)) return [];
+  
+  return movie.videoEmbeds.map((server: any, index: number) => ({
+    id: `wp-server-${index}`,
+    name: server.server_name || `Server ${index + 1}`,
+    embedHtml: server.embed_html || ''
+  }));
 }
 
 type EmbedPlaybackCommand = "handshake" | "play" | "pause" | "seek" | "requestProgress";
@@ -286,6 +91,7 @@ function sendEmbedPlaybackCommand(
 function PlayerPage() {
   const data = Route.useLoaderData();
   const movie = data?.movie;
+  const dynamicServers = extractServerList(movie);
   const { season, episode, autoplay } = Route.useSearch();
 
   const kidsMode = isKidsProfile();
@@ -294,16 +100,10 @@ function PlayerPage() {
   const mainVideoUrlRef = useRef<string>("");
   const [mainVideoUrl, setMainVideoUrl] = useState("");
   const [selectedServerId, setSelectedServerId] = useState<string>(() => {
-    if (typeof window === "undefined") return "vidking";
-    try {
-      return localStorage.getItem("sf:embedServer") || "vidking";
-    } catch {
-      return "vidking";
-    }
+    if (dynamicServers.length > 0) return dynamicServers[0].id;
+    return "direct";
   });
-  const selectedServer =
-    availableEmbedServers.find((server) => server.id === selectedServerId) ??
-    availableEmbedServers[0];
+  const selectedServer = dynamicServers.find((s) => s.id === selectedServerId);
 
   const [currentTime, setCurrentTime] = useState(0);
   const [mainSourceReady, setMainSourceReady] = useState(false);
@@ -704,26 +504,22 @@ function PlayerPage() {
   const probeServers = useCallback(async () => {
     if (probedRef.current) return;
     probedRef.current = true;
-    const results = await Promise.all(
-      availableEmbedServers.map(async (s) => ({
-        id: s.id,
-        ok: await probeEmbedUrl({
-          data: { url: buildEmbedUrl(s.id, movie.id, season, episode) },
-        }),
-      })),
-    );
-    const live = results.find((r) => r.ok);
-    const currentOk = results.find((r) => r.id === selectedServerId)?.ok;
-    if (live && !currentOk) {
-      const liveServer = availableEmbedServers.find((s) => s.id === live.id);
-      setSelectedServerId(live.id);
+
+    // Check if the current selected server has valid stream HTML content
+    const currentOk = selectedServer && selectedServer.embedHtml ? true : false;
+    
+    if (!currentOk && dynamicServers.length > 0) {
+      const fallbackServer = dynamicServers[0];
+      setSelectedServerId(fallbackServer.id);
+      
+      const currentName = selectedServer?.name || "Selected server";
       toast.warning(
-        `"${selectedServer.name}" was unreachable — switched to ${liveServer?.name ?? live.id}`,
+        `"${currentName}" was empty — switched to ${fallbackServer.name}`,
       );
-    } else if (!currentOk) {
-      toast.error(`${selectedServer.name} is unreachable. Try a different server below.`);
+    } else if (!currentOk && dynamicServers.length === 0) {
+      toast.error("No streaming video servers found for this title.");
     }
-  }, [movie.id, season, episode, selectedServerId, selectedServer.name]);
+  }, [dynamicServers, selectedServer, selectedServerId]);
 
   useEffect(() => {
     let sid: string | null = null;
@@ -736,14 +532,23 @@ function PlayerPage() {
     };
   }, [movie.id]);
 
-  useEffect(() => {
-    if (selectedServerId === "direct") return;
-    const url = buildEmbedUrl(selectedServerId, movie.id, season, episode);
-    setVideoUrl(url);
-    setMainVideoUrl(url);
-    mainVideoUrlRef.current = url;
-    setEmbedSyncSupported(false);
-  }, [selectedServerId, movie.id, season, episode]);
+ useEffect(() => {
+  if (selectedServerId === "direct") return;
+  
+  if (selectedServer && selectedServer.embedHtml) {
+    // Inject the raw custom legacy iframe code directly into the active state variables
+    setVideoUrl(selectedServer.embedHtml);
+    setMainVideoUrl(selectedServer.embedHtml);
+    mainVideoUrlRef.current = selectedServer.embedHtml;
+  } else if (movie.videoEmbedMain) {
+    // Complete ultimate baseline fallback string configuration
+    setVideoUrl(movie.videoEmbedMain);
+    setMainVideoUrl(movie.videoEmbedMain);
+    mainVideoUrlRef.current = movie.videoEmbedMain;
+  }
+  
+  setEmbedSyncSupported(false);
+}, [selectedServerId, selectedServer, movie.videoEmbedMain]);
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -1034,71 +839,10 @@ function PlayerPage() {
       onTouchEnd={onContainerTouch}
     >
       {videoUrl && !isDirect ? (
-        isEmbedUrl(videoUrl) ? (
-          <iframe
-            ref={iframeRef}
-            src={videoUrl}
-            title={`Embed Player — ${movie.title}`}
-            allow="autoplay; fullscreen; encrypted-media"
-            allowFullScreen
-            onLoad={handleEmbedLoad}
-            className="size-full border-0"
-          />
-        ) : (
-          <video
-            ref={videoRef}
-            src={videoUrl}
-            playsInline
-            poster={movie.backdrop}
-            onPlay={() => setPlaying(true)}
-            onPause={(e) => {
-              setPlaying(false);
-              doRecord(e.currentTarget.currentTime, e.currentTarget.duration || 0);
-            }}
-            onTimeUpdate={(e) => {
-              const cur = e.currentTarget.currentTime;
-              const dur = e.currentTarget.duration || 1;
-              const now = Date.now();
-              if (now - lastTimeUpdateRef.current >= 1000) {
-                lastTimeUpdateRef.current = now;
-                setProgress(dur > 0 ? (cur / dur) * 100 : 0);
-                setDuration(dur);
-                setCurrentTime(cur);
-              }
-              if (Math.floor(cur) % 5 === 0) doRecord(cur, dur);
-            }}
-             onLoadedMetadata={(e) => {
-              const dur = e.currentTarget.duration;
-              setDuration(dur);
-              if (pendingSeekRef.current != null) {
-                const t = pendingSeekRef.current;
-                pendingSeekRef.current = null;
-                e.currentTarget.currentTime = t;
-              }
-            }}
-            onCanPlay={(e) => {
-              setBuffering(false);
-            }}
-            onVolumeChange={(e) => {
-              setVolume(e.currentTarget.volume);
-              setMuted(e.currentTarget.muted);
-            }}
-            onEnded={handleVideoEnded}
-            onWaiting={() => setBuffering(true)}
-            onPlaying={() => setBuffering(false)}
-            className="size-full object-contain"
-          >
-            {subtitles.map((sub) => (
-              <track
-                key={sub.lang}
-                kind="subtitles"
-                src={sub.url}
-                srcLang={sub.lang}
-                label={sub.label}
-              />
-            ))}
-          </video>
-        )
+        <div 
+          className="size-full rounded-xl overflow-hidden bg-black"
+          dangerouslySetInnerHTML={{ __html: videoUrl }} 
+        />
       ) : isDirect ? (
         directPlaying && directStreams[activeDirectStream] ? (
           <div
@@ -1430,7 +1174,7 @@ function PlayerPage() {
                       Server
                     </p>
                     <div className="grid grid-cols-2 gap-1 mb-3 max-h-40 overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
-                      {availableEmbedServers.map((server) => (
+                      {dynamicServers.map((server) => (
                         <button
                           key={server.id}
                           onClick={() => handleServerSelect(server.id)}
@@ -1444,7 +1188,7 @@ function PlayerPage() {
                       Selected
                     </p>
                     <div className="mb-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/80">
-                      {selectedServer.name}
+                      {selectedServer?.name}
                     </div>
                     {isDirect && directStreams.length > 0 && (
                       <div className="mb-3">
