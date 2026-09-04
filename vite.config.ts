@@ -105,7 +105,7 @@ export default defineConfig(({ command, mode }): UserConfig => {
         },
         server: { entry: "server" },
       }),
-      ...(command === "build" ? [nitro({ preset: "vercel" })] : []),
+      ...(command === "build" ? [nitro({ preset: "node-server" })] : []),
       react(),
       firebaseMessagingSW(env),
     ],
