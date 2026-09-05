@@ -1,4 +1,4 @@
-import type { Movie } from "./types";
+import { Movie } from './types';
 import {
   fetchTrending,
   fetchTrendingAllWeek,
@@ -31,6 +31,7 @@ import {
   fetchAiringCalendar,
   enrichCertifications as enrichCertificationsFn,
 } from "./api/tmdb";
+
 import { fetchWatchProviders } from "./api/tmdb";
 import type { WatchProvider } from "./api/wp.server"; 
 
@@ -252,7 +253,7 @@ export async function movieById(id: string): Promise<any> {
     const transformedMovie = toMovie(rawMatched);
     
     console.log("[DIAGNOSTIC 3] Transformed movie keys:", Object.keys(transformedMovie));
-    console.log("[DIAGNOSTIC 4] check videoEmbedMain content:", transformedMovie.videoEmbedMain);
+    console.log("[DIAGNOSTIC 4] check videoEmbedMain content:", transformedMovie.video_embed_main);
     
     return transformedMovie;
   } catch (err) {

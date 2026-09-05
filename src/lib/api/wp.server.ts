@@ -1,7 +1,7 @@
-import type { Movie } from "../types";
+import type { Movie } from "@/lib/types";
+import { getServerConfig } from "@/lib/config.server";
 
-const WP_API_BASE = "https://cms.wibuplayer.com/wp-json/streamflix/v1";
-
+const { FILMJEPANG_API_BASE_URL, FILMJEPANG_API_KEY } = getServerConfig();
 // Keep TMDB references intact for image layout lookups and asset fallback scripts
 const TMDB_BASE = "https://api.themoviedb.org/3";
 const IMG_BASE = "https://image.tmdb.org/t/p/";
@@ -30,27 +30,27 @@ export async function tmdbFetch(path: string, params: Record<string, string> = {
     const page = params.page ? parseInt(params.page) : 1;
     const perPage = params.per_page ? parseInt(params.per_page) : 20;
 
-    // Direct movie inventory index requests to our Azure site cluster
-    if (path.includes("/discover/movie") || path.includes("/trending") || path.includes("/movies")) {
-        try {
-            const res = await fetch(`${WP_API_BASE}/movies?page=${page}&per_page=${perPage}`);
-            if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
-            
-            const wpData = await res.json();
-            return {
-                page: wpData.page,
-                total_results: wpData.total_results,
-                total_pages: wpData.total_pages,
-                results: wpData.results || [] 
-            };
-        } catch (err) {
-            console.error("WordPress Proxy Error:", err);
-            return { page: 1, total_results: 0, total_pages: 0, results: [] };
-        }
+    try {
+        const res = await fetch(`${FILMJEPANG_API_BASE_URL}?page=${page}&per_page=${perPage}`, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${FILMJEPANG_API_KEY}`,
+                "Content-Type": "application/json"
+            }
+        });
+        if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
+        
+        const wpData = await res.json();
+        return {
+            page: wpData.page,
+            total_results: wpData.total_results,
+            total_pages: wpData.total_pages,
+            results: wpData.results || [] 
+        };
+    } catch (err) {
+        console.error("WordPress Proxy Error:", err);
+        return { page: 1, total_results: 0, total_pages: 0, results: [] };
     }
-
-    // Default structural fallback block to handle missing endpoints gracefully
-    return { results: [], genres: [] };
 }
 
 export function toMovie(m: any): Movie {
@@ -63,6 +63,11 @@ export function toMovie(m: any): Movie {
         parsedYear = parseInt(m.year);
     }
 
+    // 🟢 CRUCIAL CAROUSEL BANNER FIX:
+    // If the movie has no widescreen backdrop artwork path field, safely use the poster path as a fallback layout vector
+    const fallbackPosterPath = m.poster_path || "";
+    const cleanBackdropPath = m.backdrop_path ? m.backdrop_path : fallbackPosterPath;
+
     return {
         id: String(m.id),
         title: m.title,
@@ -74,36 +79,31 @@ export function toMovie(m: any): Movie {
         genres: m.genres || [],
         genreIds: [],
         
-        poster: processImage(m.poster_path, "w500"),
-        backdrop: processImage(m.backdrop_path, "original"),
-        backdropSm: processImage(m.backdrop_path, "w1280"),
+        poster: processImage(fallbackPosterPath, "w500"),
+        backdrop: processImage(cleanBackdropPath, "original"),
+        backdropSm: processImage(cleanBackdropPath, "w1280"),
         
-        cast: m.cast?.length ? m.cast : ["Unknown"],
+        cast: Array.isArray(m.cast) && m.cast.length > 0 ? m.cast : ["Unknown Cast"],
         castPfp: [],
         castRoles: [],
         castIds: [],
-        director: m.directors?.length ? m.directors.join(", ") : "Unknown",
-        directorId: "",
+        directorId: m.directors?.length ? m.directors[0] : "Unknown",
         directorPfp: "",
         
         match: scoreVal ? Math.round(scoreVal * 10) : 0,
         score: scoreVal || undefined,
         popularity: m.views?.total ? parseFloat(m.views.total) : undefined,
 
-        // 💡 EXPLICIT STREAMFLIX LAYOUT ATTRIBUTES MATCHING YOUR RENAMED METRICS:
+        // VITAL PROPS SYNC: Forces the stream router to notice custom content targets
+        isWPContent: true, 
         code: m.code || "",
         slug: m.slug || "",
         video_embed_main: m.video_embed_main || m.videoEmbedMain || "",
-        videoEmbedMain: m.video_embed_main || m.videoEmbedMain || "",
-        
         video_embeds: m.video_embeds || m.videoEmbeds || [],
-        videoEmbeds: m.video_embeds || m.videoEmbeds || [],
-        
-        download_links: m.download_links || m.downloadLinks || [],
-        downloadLinks: m.download_links || m.downloadLinks || [],
-        seoPath: m.seo?.app_target_url || ""
+        download_links: m.download_links || m.downloadLinks || []
     };
 }
+
 
 export function toTv(m: any): Movie {
   const epRuntime = Array.isArray(m.episode_run_time) ? m.episode_run_time[0] : null;
@@ -124,7 +124,6 @@ export function toTv(m: any): Movie {
     castPfp: [],
     castRoles: [],
     castIds: [],
-    director: "Unknown",
     directorId: "",
     directorPfp: "",
     match: m.vote_average ? Math.round(m.vote_average * 10) : 0,

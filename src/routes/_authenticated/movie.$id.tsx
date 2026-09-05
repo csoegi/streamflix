@@ -304,14 +304,32 @@ function MoviePage() {
   return (
     <div className="min-h-dvh bg-background">
       <Navbar />
-      <section className="relative pt-16 md:flex md:min-h-[85vh] md:items-center md:pt-20">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-[52vh] overflow-hidden sm:h-[58vh] md:inset-y-0 md:h-auto">
-          <img src={movie.backdrop} alt="" className="absolute inset-0 size-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/70 to-transparent" />
-          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background to-transparent" />
+          <section className="relative pt-16 md:flex md:min-h-[85vh] md:items-center md:pt-20 bg-background overflow-hidden">
+        
+        {/* LAYER 1: Ambient Blurred Background (Brings portrait artwork out to widescreen sides) */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[52vh] overflow-hidden sm:h-[58vh] md:inset-y-0 md:h-auto md:w-full select-none scale-110 transform z-0">
+          <img 
+            src={movie.backdrop} 
+            alt="" 
+            className="absolute inset-0 size-full object-cover blur-3xl opacity-30" 
+          />
         </div>
 
-        <div className="relative z-10 w-full min-w-0 px-4 py-10 sm:px-8 md:px-12 md:py-16 lg:px-16">
+        {/* LAYER 2: Crisp Foreground Portrait Poster (Preserves real 360x510 proportions in right grid column) */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[52vh] overflow-hidden sm:h-[58vh] md:inset-y-0 md:h-auto md:w-full select-none z-10 flex items-center justify-end pr-0 md:pr-16 lg:pr-32 opacity-80 md:opacity-90">
+          <img 
+            src={movie.poster} 
+            alt="" 
+            className="h-[75%] w-auto object-contain rounded-xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)] border border-white/5 hidden md:block" 
+          />
+        </div>
+
+        {/* LAYER 3: Combined Shader Gradients Masks Overlays */}
+        <div className="absolute inset-x-0 top-0 h-[52vh] bg-gradient-to-r from-background via-background/60 to-transparent z-15 pointer-events-none md:inset-y-0 md:h-auto md:w-full md:bg-gradient-to-r md:from-background md:via-background/50 md:to-transparent" />
+        <div className="absolute inset-x-0 top-0 h-[52vh] bg-gradient-to-t from-background to-transparent z-15 pointer-events-none md:inset-y-0 md:h-auto md:w-full md:bg-gradient-to-t md:from-background md:via-background/20 md:to-transparent" />
+        <div className="absolute left-0 right-0 bottom-0 h-32 bg-gradient-to-t from-background to-transparent z-15 pointer-events-none hidden md:block" />
+
+        <div className="relative z-20 w-full min-w-0 px-4 py-10 sm:px-8 md:px-12 md:py-16 lg:px-16">
           <button
             type="button"
             onClick={goBack}
@@ -320,6 +338,7 @@ function MoviePage() {
           >
             <ArrowLeft className="size-4" /> Back
           </button>
+          
           <div className="grid w-full min-w-0 gap-10 md:grid-cols-3 md:items-center md:gap-8">
             <div className="min-w-0 space-y-4 md:col-span-2">
               {titleLogoUrl ? (
@@ -330,7 +349,7 @@ function MoviePage() {
                   className="mb-4 max-h-24 w-auto max-w-full object-contain select-none sm:max-h-32 md:max-h-36"
                 />
               ) : (
-                <h1 className="mb-4 text-3xl md:text-4xl lg:text-5xl font-bold">{movie.title}</h1>
+                <h1 className="mb-4 text-3xl md:text-4xl lg:text-5xl font-bold text-white drop-shadow-md">{movie.title}</h1>
               )}
               <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm">
                 {movie.score != null && (
@@ -351,27 +370,44 @@ function MoviePage() {
               </div>
 
               <div className="flex flex-wrap gap-2">
-                {movie.genreIds.map((gid: number, i: number) => {
-                  const label = genreLabels[String(gid)] || movie.genres[i] || "Explore";
-                  return (
-                    <Link
-                      key={`${gid}-${i}`}
-                      to="/explore/$genreId"
-                      params={{ genreId: String(gid) }}
-                      search={{ q: label }}
-                      className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-foreground backdrop-blur-lg transition hover:bg-white/10 hover:border-primary/50"
-                    >
-                      {label}
-                    </Link>
-                  );
-                })}
+                {movie.genres && movie.genres.length > 0 ? (
+                  movie.genres.map((genreName: string, i: number) => {
+                    // Normalize the name string directly into a clean lowercase URL slug asset tracker
+                    const genreSlug = genreName.toLowerCase().trim().replace(/\s+/g, '-');
+                    
+                    return (
+                      <Link
+                        key={`${genreSlug}-${i}`}
+                        to="/explore/$genreId"
+                        params={{ genreId: genreSlug }} // Passes the string slug directly as the resource parameter
+                        search={{ q: genreName }}        // Keeps your app's standard query search parameter filled
+                        className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-foreground backdrop-blur-lg transition hover:bg-white/10 hover:border-primary/50"
+                      >
+                        {genreName}
+                      </Link>
+                    );
+                  })
+                ) : (
+                  // Fallback: Legacy loop to handle native TMDB items if they ever load
+                  movie.genreIds?.map((gid: number, i: number) => {
+                    const label = genreLabels[String(gid)] || "Explore";
+                    return (
+                      <Link
+                        key={`${gid}-${i}`}
+                        to="/explore/$genreId"
+                        params={{ genreId: String(gid) }}
+                        search={{ q: label }}
+                        className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-foreground backdrop-blur-lg transition hover:bg-white/10 hover:border-primary/50"
+                      >
+                        {label}
+                      </Link>
+                    );
+                  })
+                )}
               </div>
+              
               <div className="min-w-0">
-                <p
-                  className={`max-w-xl break-words text-base md:text-lg text-gray-300 leading-relaxed ${
-                    descExpanded ? "" : "line-clamp-3"
-                  }`}
-                >
+                <p className={`max-w-xl break-words text-base md:text-lg text-gray-300 leading-relaxed ${descExpanded ? "" : "line-clamp-3"}`}>
                   {movie.description}
                 </p>
                 <button
@@ -388,10 +424,10 @@ function MoviePage() {
                   params={{ id: movie.id }}
                   search={
                     isTv
-                      ? { autoplay: true, season: 1, episode: 1 }
-                      : { autoplay: true }
+                      ? { autoplay: true, season: 1, episode: 1, source: "wp" }
+                      : { autoplay: true, source: "wp" } // Injects source parameter directly into target router paths
                   }
-                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md bg-foreground px-5 py-2.5 text-sm font-semibold text-background hover:bg-foreground/85 sm:px-6 sm:py-3"
+                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md bg-white px-5 py-2.5 text-sm font-semibold text-black hover:bg-white/85 sm:px-6 sm:py-3 shadow-lg"
                 >
                   <Play className="size-4 fill-current sm:size-5" />{" "}
                   {isTv ? "Play S1 E1" : "Play"}
@@ -427,9 +463,7 @@ function MoviePage() {
                     toast.success(added ? "Added to My List" : "Removed from My List");
                   }}
                   className={`grid size-11 sm:size-12 place-items-center rounded-full border ${
-                    inList
-                      ? "border-primary bg-primary/20 text-primary"
-                      : "border-border hover:border-foreground"
+                    inList ? "border-primary bg-primary/20 text-primary" : "border-border hover:border-foreground"
                   }`}
                   aria-label={inList ? "Remove from My List" : "Add to My List"}
                 >
@@ -451,191 +485,31 @@ function MoviePage() {
                   <Share2 className="size-4 sm:size-5" />
                 </button>
               </div>
-
               <div className="min-w-0 pt-4">
                 <p className="mb-3 text-sm font-semibold text-foreground sm:text-base">Cast</p>
                 <div className="relative min-w-0 max-w-full">
-                  {movie.cast.length > 7 && castScroll.left > 2 && (
-                    <button
-                      type="button"
-                      onClick={() => scrollCast(-1)}
-                      aria-label="Scroll cast left"
-                      className="absolute left-1 top-1/2 z-10 hidden size-8 -translate-y-1/2 place-items-center rounded-full border border-border bg-background/90 text-foreground shadow-lg backdrop-blur transition hover:bg-primary hover:text-primary-foreground sm:grid sm:size-9"
-                    >
-                      <ChevronLeft className="size-4 sm:size-5" />
-                    </button>
-                  )}
-                  {movie.cast.length > 7 &&
-                    castScroll.viewport > 0 &&
-                    castScroll.left + castScroll.viewport < castScroll.width - 2 && (
-                    <button
-                      type="button"
-                      onClick={() => scrollCast(1)}
-                      aria-label="Scroll cast right"
-                      className="absolute right-1 top-1/2 z-10 hidden size-8 -translate-y-1/2 place-items-center rounded-full border border-border bg-background/90 text-foreground shadow-lg backdrop-blur transition hover:bg-primary hover:text-primary-foreground sm:grid sm:size-9"
-                    >
-                      <ChevronRight className="size-4 sm:size-5" />
-                    </button>
-                  )}
-                  <div
-                    ref={castScrollerRef}
-                    className="scrollbar-thin scrollbar-thumb-white/25 scrollbar-track-transparent flex gap-3 overflow-x-auto py-2 backdrop-blur-sm"
-                  >
-                    {movie.director && (
-                      <Link
-                        to={movie.directorId ? "/person/$id" : "/search"}
-                        params={movie.directorId ? { id: movie.directorId } : {}}
-                        search={movie.directorId ? undefined : { q: movie.director, tab: "people" }}
-                        className="group z-10 w-20 shrink-0 text-center transition-transform duration-300 ease-out hover:z-20 hover:scale-110 sm:w-24"
-                      >
-                        <div className="aspect-square w-full overflow-hidden rounded-xl bg-surface ring-1 ring-red-500/70 transition-shadow duration-300 group-hover:shadow-2xl group-hover:ring-2">
-                          {movie.directorPfp ? (
-                            <img
-                              src={movie.directorPfp}
-                              alt={movie.director}
-                              className="size-full object-cover"
-                            />
-                          ) : (
-                            <div className="flex size-full items-center justify-center text-sm font-bold text-muted-foreground">
-                              {movie.director.charAt(0)}
-                            </div>
-                          )}
-                        </div>
-                        <span className="mt-1.5 block truncate text-[11px] font-semibold text-foreground group-hover:text-primary">
-                          {movie.director}
-                        </span>
-                        <span className="block truncate text-[10px] text-red-400">
-                          Director
-                        </span>
-                      </Link>
-                    )}
-                    {movie.cast.slice(0, 15).map((name: string, i: number) => {
-                      const personId = movie.castIds?.[i];
-                      const link = personId
-                        ? { to: "/person/$id" as const, params: { id: personId } }
-                        : {
-                            to: "/search" as const,
-                            search: { q: name, tab: "people" as const },
-                            params: {},
-                          };
-                      return (
-                        <Link
-                          key={`${name}-${i}`}
-                          to={link.to}
-                          {...(link.to === "/search"
-                            ? { search: (link as any).search }
-                            : { params: (link as any).params })}
-                          className="group z-10 w-20 shrink-0 text-center transition-transform duration-300 ease-out hover:z-20 hover:scale-110 sm:w-24"
+                  <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+                    {movie.cast && movie.cast.length > 0 ? (
+                      movie.cast.map((actorName: string, index: number) => (
+                        <div 
+                          key={`${actorName}-${index}`} 
+                          className="flex flex-col items-center shrink-0 w-20 text-center space-y-1.5"
                         >
-                          <div className="aspect-square w-full overflow-hidden rounded-xl bg-surface ring-1 ring-border transition-shadow duration-300 group-hover:shadow-2xl group-hover:ring-2">
-                            {movie.castPfp[i] ? (
-                              <img
-                                src={movie.castPfp[i]}
-                                alt={name}
-                                className="size-full object-cover"
-                              />
-                            ) : (
-                              <div className="flex size-full items-center justify-center text-sm font-bold text-muted-foreground">
-                                {name.charAt(0)}
-                              </div>
-                            )}
+                          {/* Fallback elegant monogram profile avatar circle since we have no PFP image URLs from WP */}
+                          <div className="size-14 rounded-full bg-zinc-800 border border-white/5 flex items-center justify-center font-bold text-zinc-400 text-sm select-none shadow-md">
+                            {actorName.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
                           </div>
-                          <span className="mt-1.5 block truncate text-[11px] font-semibold text-foreground group-hover:text-primary">
-                            {name}
+                          <span className="text-xs text-zinc-400 font-medium line-clamp-2 max-w-full leading-tight">
+                            {actorName}
                           </span>
-                          {movie.castRoles?.[i] && (
-                            <span className="block truncate text-[10px] text-muted-foreground">
-                              {movie.castRoles[i]}
-                            </span>
-                          )}
-                        </Link>
-                      );
-                    })}
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-zinc-500">No cast information available.</p>
+                    )}
                   </div>
                 </div>
               </div>
-            </div>
-
-            <div className="min-w-0 md:col-span-1">
-              {isTv && movie.numberOfSeasons && movie.numberOfSeasons > 0 ? (
-                <>
-                  <div className="relative hidden aspect-[2/3] w-full overflow-hidden rounded-xl md:block md:w-80">
-                    <div
-                      className={`absolute inset-0 z-0 transition-transform duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] ${
-                        showPicker ? "-translate-x-[25%]" : "translate-x-0"
-                      }`}
-                    >
-                      <div className="relative size-full overflow-hidden rounded-xl bg-surface shadow-2xl ring-1 ring-white/15">
-                        {movie.poster ? (
-                          <img
-                            src={movie.poster}
-                            alt={movie.title}
-                            className="size-full object-cover"
-                          />
-                        ) : (
-                          <div className="flex size-full items-center justify-center text-2xl font-bold text-muted-foreground">
-                            {movie.title.charAt(0)}
-                          </div>
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                      </div>
-                    </div>
-                    <aside
-                      className={`absolute inset-0 z-10 overflow-y-auto scrollbar-thin transition-transform duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] ${
-                        showPicker ? "translate-x-0" : "translate-x-full"
-                      }`}
-                    >
-                      <div className="min-h-full rounded-lg border border-border bg-background p-4 shadow-2xl sm:p-5">
-                        <SeasonEpisodePicker movieId={movie.id} numberOfSeasons={movie.numberOfSeasons} movie={movie} />
-                      </div>
-                    </aside>
-                    {showPicker && (
-                      <div className="absolute inset-y-0 left-2 z-30 hidden items-center md:flex">
-                        <button
-                          type="button"
-                          onClick={() => setShowPicker(false)}
-                          aria-label="Show portrait"
-                          className="grid size-8 place-items-center rounded-full border border-border bg-background/80 text-muted-foreground backdrop-blur-sm transition-colors hover:text-foreground"
-                        >
-                          <ChevronLeft className="size-4" />
-                        </button>
-                      </div>
-                    )}
-                    {!showPicker && (
-                      <div className="absolute inset-y-0 right-2 z-30 hidden items-center md:flex">
-                        <button
-                          type="button"
-                          onClick={() => setShowPicker(true)}
-                          aria-label="Show season picker"
-                          className="grid size-8 place-items-center rounded-full border border-border bg-background/80 text-muted-foreground backdrop-blur-sm transition-colors hover:text-foreground"
-                        >
-                          <ChevronRight className="size-4" />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                  <aside className="w-full rounded-lg border border-border bg-background/70 p-4 backdrop-blur-md sm:p-5 md:hidden">
-                    <SeasonEpisodePicker movieId={movie.id} numberOfSeasons={movie.numberOfSeasons} movie={movie} />
-                  </aside>
-                </>
-              ) : (
-                <div className="hidden w-full md:block md:w-80">
-                  <div className="relative aspect-[2/3] w-full overflow-hidden rounded-xl bg-surface shadow-2xl ring-1 ring-white/15">
-                    {movie.poster ? (
-                      <img
-                        src={movie.poster}
-                        alt={movie.title}
-                        className="size-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex size-full items-center justify-center text-2xl font-bold text-muted-foreground">
-                        {movie.title.charAt(0)}
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>
