@@ -6,9 +6,16 @@ import { Navbar } from "@/components/streamflix/Navbar";
 import { Footer } from "@/components/streamflix/Footer";
 import { MovieCard } from "@/components/streamflix/MovieCard";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getGenres, searchByGenre } from "@/lib/streamflix-data";
+import { toMovie } from "@/lib/api/wp.server";
 import type { Movie } from "@/lib/types";
-import { isKidsProfile, filterKidsContent } from "@/lib/kids-mode";
+import { getServerConfig } from "@/lib/config.server";
+
+interface WPGenreTerm {
+  term_id: number;
+  name: string;
+  slug: string;
+  count: number;
+}
 
 const exploreSearchSchema = z.object({
   q: z.string().optional().catch(""),
@@ -16,13 +23,52 @@ const exploreSearchSchema = z.object({
 
 export const Route = createFileRoute("/_authenticated/explore/$genreId")({
   validateSearch: exploreSearchSchema,
-  loader: async ({ params }) => {
-    const [genres, items] = await Promise.all([
-      getGenres(),
-      searchByGenre(params.genreId).catch(() => [] as Movie[]),
-    ]);
-    const genreName = genres.find((g) => String(g.id) === params.genreId)?.name ?? "Explore";
-    return { genreId: params.genreId, genreName, genres, items };
+  loader: async ({ params, location }) => {
+    const genreSlug = params.genreId;
+    const searchParams = new URLSearchParams(location.search);
+    const fallbackName = searchParams.get('q') || "Explore";
+    
+    const { FILMJEPANG_API_BASE_URL, FILMJEPANG_API_KEY } = getServerConfig();
+    
+    let genres: WPGenreTerm[] = [];
+    let items: Movie[] = [];
+    
+    try {
+      // 1. Fetch live genres from the WordPress API to populate the chips panel
+      const genresRes = await fetch(`${FILMJEPANG_API_BASE_URL}/genres`, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${FILMJEPANG_API_KEY}`,
+          "Content-Type": "application/json"
+        }
+      });
+      if (genresRes.ok) {
+        genres = await genresRes.json();
+        genres.sort((a, b) => b.count - a.count); // Sort genres by count
+        genres = genres.slice(0, 10); // Limit to top 10 genres for UI
+      }
+
+      // 2. Fetch movies belonging to this specific genre slug
+      const moviesRes = await fetch(`${FILMJEPANG_API_BASE_URL}/genres/${genreSlug}?per_page=48`, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${FILMJEPANG_API_KEY}`,
+          "Content-Type": "application/json"
+        }
+      });
+      if (moviesRes.ok) {
+        const wpData = await moviesRes.json();
+        items = (wpData.results || []).map((m: any) => toMovie(m));
+      }
+    } catch (err) {
+      console.error("Explore genre slug loader error:", err);
+    }
+
+    // Resolve the exact human-readable name of the current genre matching the slug
+    const matchedTerm = genres.find((g) => g.slug === genreSlug);
+    const genreName = matchedTerm ? matchedTerm.name : fallbackName;
+
+    return { genreId: genreSlug, genreName, genres, items };
   },
   head: ({ loaderData }) => ({
     meta: [{ title: `${loaderData?.genreName || "Explore"} — StreamFlix` }],
@@ -56,15 +102,12 @@ export const Route = createFileRoute("/_authenticated/explore/$genreId")({
 });
 
 function ExploreGenrePage() {
-  const { genreId, genres, items } = Route.useLoaderData();
-  const { q } = Route.useSearch();
+  const { genreId, genreName, genres, items } = Route.useLoaderData();
   const [page, setPage] = useState(1);
   const navigate = useNavigate();
 
-  const kidsMode = isKidsProfile();
-  const safeGenres = genres;
-  const safeItems = kidsMode ? filterKidsContent(items) : items;
-  const genreName = safeGenres.find((g) => String(g.id) === genreId)?.name || q || "Explore";
+  const safeGenres = genres || [];
+  const safeItems = items || [];
   const hero = safeItems[0];
 
   const pageCount = Math.max(1, Math.ceil(safeItems.length / 24));
@@ -74,42 +117,45 @@ function ExploreGenrePage() {
     <div className="min-h-dvh bg-background">
       <Navbar />
 
-      {/* Cinematic hero */}
-      <section className="relative flex h-[42vh] items-end overflow-hidden sm:h-[52vh]">
+      {/* Cinematic Hero Header Viewport */}
+      <section className="relative flex h-[42vh] items-end overflow-hidden sm:h-[52vh] bg-zinc-950">
         {hero?.backdrop ? (
-          <img src={hero.backdrop} alt="" className="absolute inset-0 size-full object-cover" />
+          <img src={hero.backdrop} alt="" className="absolute inset-0 size-full object-cover opacity-40 blur-sm scale-105" />
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/40 via-surface to-background" />
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-900/40 via-surface to-background" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
         <div className="relative z-10 w-full px-4 pb-8 sm:px-8 md:px-16">
-          <div className="flex items-center gap-2 text-emerald-400">
+          <div className="flex items-center gap-2 text-emerald-400 drop-shadow">
             <Sparkles className="size-5" />
             <span className="text-sm font-semibold uppercase tracking-widest">Mood</span>
           </div>
-          <h1 className="mt-1 text-4xl font-black tracking-tight sm:text-6xl">{genreName}</h1>
-          <p className="mt-2 max-w-xl text-sm text-foreground/80 sm:text-base">
+          <h1 className="mt-1 text-4xl font-black tracking-tight sm:text-6xl text-white drop-shadow-md">{genreName}</h1>
+          <p className="mt-2 max-w-xl text-sm text-foreground/80 sm:text-base drop-shadow">
             {safeItems.length} titles hand-picked to match this vibe.
           </p>
         </div>
       </section>
 
       <main className="mx-auto max-w-[1800px] px-4 pb-16 sm:px-8">
-        {/* Mood chips */}
+        
+        {/* Dynamic Category Navigation Chips Panel */}
         <div className="mt-8 flex flex-wrap gap-2">
-          {safeGenres.map((g) => {
-            const active = String(g.id) === genreId;
+          {safeGenres.map((g: any) => {
+            const currentSlug = g.slug || g.name.toLowerCase().trim().replace(/\s+/g, '-');
+            const active = currentSlug === genreId;
+            
             return (
               <Link
-                key={g.id}
+                key={g.term_id || g.id}
                 to="/explore/$genreId"
-                params={{ genreId: String(g.id) }}
+                params={{ genreId: currentSlug }} // FIX: Routes dynamically via string slugs
                 search={{ q: g.name }}
                 onClick={() => setPage(1)}
-                className={`rounded-full border px-4 py-2 text-sm transition ${
+                className={`rounded-full border px-4 py-2 text-sm transition font-medium shadow-sm ${
                   active
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-border text-muted-foreground hover:border-primary hover:text-foreground"
+                    ? "border-white bg-white text-black font-semibold scale-105"
+                    : "border-border text-muted-foreground hover:border-primary hover:text-foreground hover:bg-white/5"
                 }`}
               >
                 {g.name}
@@ -125,12 +171,13 @@ function ExploreGenrePage() {
                 <button
                   key={m.id}
                   onClick={() => navigate({ to: "/movie/$id", params: { id: m.id } })}
-                  className="w-full text-left"
+                  className="w-full text-left transition transform hover:scale-[1.02] duration-200"
                 >
                   <MovieCard movie={m} fluid />
                 </button>
               ))}
             </div>
+            
             {pageCount > 1 && (
               <div className="mt-8 flex items-center justify-center gap-2">
                 <button
@@ -144,10 +191,10 @@ function ExploreGenrePage() {
                   <button
                     key={p}
                     onClick={() => setPage(p)}
-                    className={`rounded-md px-3 py-2 text-sm ${
+                    className={`rounded-md px-3 py-2 text-sm font-medium ${
                       p === page
-                        ? "bg-primary text-primary-foreground"
-                        : "border border-border text-muted-foreground hover:text-foreground"
+                        ? "bg-white text-black font-semibold shadow-md"
+                        : "border border-border text-muted-foreground hover:text-foreground hover:bg-white/5"
                     }`}
                   >
                     {p}
