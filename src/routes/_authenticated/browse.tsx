@@ -452,8 +452,7 @@ function BrowsePage() {
   }, [kidsMode, kidsPool]);
 
   const filteredHeroSlides = useMemo(() => {
-    if (!kidsMode) return heroSlides;
-    return filterKidsHeroSlides(heroSlides);
+     return heroSlides;
   }, [kidsMode, heroSlides]);
 
   const filteredRows = useMemo(() => {
