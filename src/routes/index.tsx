@@ -4,7 +4,7 @@ import { ChevronRight, Play, ChevronDown, Mail, Instagram, Tv, Smartphone, Monit
 import { Logo } from "@/components/streamflix/Logo";
 import { ContactEmail } from "@/components/streamflix/ContactEmail";
 import { isInApp } from "@/lib/app-downloads";
-import { tmdbFetch, toMovie } from "@/lib/api/tmdb.server";
+import { tmdbFetch, toMovie } from "@/lib/api/wp.server";
 import type { Movie } from "@/lib/types";
 import heroImg from "@/assets/landing.jpg";
 

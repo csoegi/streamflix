@@ -2,49 +2,49 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 export const fetchTrending = createServerFn({ method: "POST" }).handler(async () => {
-  const { tmdbFetch, toMovie } = await import("./tmdb.server");
+  const { tmdbFetch, toMovie } = await import("./wp.server");
   const data = await tmdbFetch("/trending/movie/week");
   return (data.results || []).map((m: any) => toMovie(m));
 });
 
 export const fetchTrendingDay = createServerFn({ method: "POST" }).handler(async () => {
-  const { tmdbFetch, toMovie } = await import("./tmdb.server");
+  const { tmdbFetch, toMovie } = await import("./wp.server");
   const data = await tmdbFetch("/trending/movie/day");
   return (data.results || []).map((m: any) => toMovie(m));
 });
 
 export const fetchTrendingAllDay = createServerFn({ method: "POST" }).handler(async () => {
-  const { tmdbFetch, toMovie, toTv } = await import("./tmdb.server");
+  const { tmdbFetch, toMovie, toTv } = await import("./wp.server");
   const data = await tmdbFetch("/trending/all/day");
   return (data.results || []).map((m: any) => (m.media_type === "tv" ? toTv(m) : toMovie(m)));
 });
 
 export const fetchTrendingAllWeek = createServerFn({ method: "POST" }).handler(async () => {
-  const { tmdbFetch, toMovie, toTv } = await import("./tmdb.server");
+  const { tmdbFetch, toMovie, toTv } = await import("./wp.server");
   const data = await tmdbFetch("/trending/all/week");
   return (data.results || []).map((m: any) => (m.media_type === "tv" ? toTv(m) : toMovie(m)));
 });
 
 export const fetchPopular = createServerFn({ method: "POST" }).handler(async () => {
-  const { tmdbFetch, toMovie } = await import("./tmdb.server");
+  const { tmdbFetch, toMovie } = await import("./wp.server");
   const data = await tmdbFetch("/movie/popular");
   return (data.results || []).map((m: any) => toMovie(m));
 });
 
 export const fetchNowPlaying = createServerFn({ method: "POST" }).handler(async () => {
-  const { tmdbFetch, toMovie } = await import("./tmdb.server");
+  const { tmdbFetch, toMovie } = await import("./wp.server");
   const data = await tmdbFetch("/movie/now_playing");
   return (data.results || []).map((m: any) => toMovie(m));
 });
 
 export const fetchTopRated = createServerFn({ method: "POST" }).handler(async () => {
-  const { tmdbFetch, toMovie } = await import("./tmdb.server");
+  const { tmdbFetch, toMovie } = await import("./wp.server");
   const data = await tmdbFetch("/movie/top_rated");
   return (data.results || []).map((m: any) => toMovie(m));
 });
 
 export const fetchUpcoming = createServerFn({ method: "POST" }).handler(async () => {
-  const { tmdbFetch, toMovie } = await import("./tmdb.server");
+  const { tmdbFetch, toMovie } = await import("./wp.server");
   const [page1, page2] = await Promise.all([
     tmdbFetch("/movie/upcoming", { page: "1" }),
     tmdbFetch("/movie/upcoming", { page: "2" }),
@@ -59,7 +59,7 @@ export const fetchUpcoming = createServerFn({ method: "POST" }).handler(async ()
 });
 
 export const fetchUpcomingTv = createServerFn({ method: "POST" }).handler(async () => {
-  const { tmdbFetch, toTv } = await import("./tmdb.server");
+  const { tmdbFetch, toTv } = await import("./wp.server");
   const today = new Date().toISOString().slice(0, 10);
   const data = await tmdbFetch("/discover/tv", {
     sort_by: "first_air_date.asc",
@@ -69,7 +69,7 @@ export const fetchUpcomingTv = createServerFn({ method: "POST" }).handler(async 
 });
 
 export const fetchPopularUpcoming = createServerFn({ method: "POST" }).handler(async () => {
-  const { tmdbFetch, toMovie } = await import("./tmdb.server");
+  const { tmdbFetch, toMovie } = await import("./wp.server");
   const today = new Date().toISOString().slice(0, 10);
   const data = await tmdbFetch("/discover/movie", {
     sort_by: "popularity.desc",
@@ -80,7 +80,7 @@ export const fetchPopularUpcoming = createServerFn({ method: "POST" }).handler(a
 });
 
 export const fetchPopularUpcomingTv = createServerFn({ method: "POST" }).handler(async () => {
-  const { tmdbFetch, toTv } = await import("./tmdb.server");
+  const { tmdbFetch, toTv } = await import("./wp.server");
   const today = new Date().toISOString().slice(0, 10);
   const data = await tmdbFetch("/discover/tv", {
     sort_by: "popularity.desc",
@@ -91,7 +91,7 @@ export const fetchPopularUpcomingTv = createServerFn({ method: "POST" }).handler
 });
 
 export const fetchNewMovies = createServerFn({ method: "POST" }).handler(async () => {
-  const { tmdbFetch, toMovie } = await import("./tmdb.server");
+  const { tmdbFetch, toMovie } = await import("./wp.server");
   const today = new Date();
   const start = new Date();
   start.setDate(today.getDate() - 90);
@@ -117,7 +117,7 @@ export type CalendarTitle = {
 };
 
 export const fetchUpcomingCalendar = createServerFn({ method: "POST" }).handler(async () => {
-  const { tmdbFetch } = await import("./tmdb.server");
+  const { tmdbFetch } = await import("./wp.server");
   const data = await tmdbFetch("/movie/upcoming", { page: "1" });
   return (data.results || []).map((m: any): CalendarTitle => ({
     id: String(m.id),
@@ -132,7 +132,7 @@ export const fetchUpcomingCalendar = createServerFn({ method: "POST" }).handler(
 });
 
 export const fetchAiringCalendar = createServerFn({ method: "POST" }).handler(async () => {
-  const { tmdbFetch } = await import("./tmdb.server");
+  const { tmdbFetch } = await import("./wp.server");
   const data = await tmdbFetch("/tv/on_the_air", { page: "1" });
   return (data.results || []).map((m: any): CalendarTitle => ({
     id: `tv-${m.id}`,
@@ -163,31 +163,31 @@ export const probeEmbedUrl = createServerFn({ method: "POST" })
 
 // ---- TV ----
 export const fetchTrendingTv = createServerFn({ method: "POST" }).handler(async () => {
-  const { tmdbFetch, toTv } = await import("./tmdb.server");
+  const { tmdbFetch, toTv } = await import("./wp.server");
   const data = await tmdbFetch("/trending/tv/week");
   return (data.results || []).map((m: any) => toTv(m));
 });
 
 export const fetchTrendingTvDay = createServerFn({ method: "POST" }).handler(async () => {
-  const { tmdbFetch, toTv } = await import("./tmdb.server");
+  const { tmdbFetch, toTv } = await import("./wp.server");
   const data = await tmdbFetch("/trending/tv/day");
   return (data.results || []).map((m: any) => toTv(m));
 });
 
 export const fetchPopularTv = createServerFn({ method: "POST" }).handler(async () => {
-  const { tmdbFetch, toTv } = await import("./tmdb.server");
+  const { tmdbFetch, toTv } = await import("./wp.server");
   const data = await tmdbFetch("/tv/popular");
   return (data.results || []).map((m: any) => toTv(m));
 });
 
 export const fetchTopRatedTv = createServerFn({ method: "POST" }).handler(async () => {
-  const { tmdbFetch, toTv } = await import("./tmdb.server");
+  const { tmdbFetch, toTv } = await import("./wp.server");
   const data = await tmdbFetch("/tv/top_rated");
   return (data.results || []).map((m: any) => toTv(m));
 });
 
 export const fetchAiringTv = createServerFn({ method: "POST" }).handler(async () => {
-  const { tmdbFetch, toTv } = await import("./tmdb.server");
+  const { tmdbFetch, toTv } = await import("./wp.server");
   const data = await tmdbFetch("/tv/on_the_air");
   return (data.results || []).map((m: any) => toTv(m));
 });
@@ -195,7 +195,7 @@ export const fetchAiringTv = createServerFn({ method: "POST" }).handler(async ()
 export const fetchMovie = createServerFn({ method: "POST" })
   .validator(z.object({ id: z.string() }))
   .handler(async ({ data }) => {
-    const { tmdbFetch, toMovie, toTv } = await import("./tmdb.server");
+    const { tmdbFetch, toMovie, toTv } = await import("./wp.server");
     if (data.id.startsWith("tv-")) {
       const realId = data.id.slice(3);
       const m = await tmdbFetch(`/tv/${realId}`, { append_to_response: "credits,videos,content_ratings" });
@@ -208,7 +208,7 @@ export const fetchMovie = createServerFn({ method: "POST" })
 export const fetchSimilar = createServerFn({ method: "POST" })
   .validator(z.object({ id: z.string() }))
   .handler(async ({ data }) => {
-    const { tmdbFetch, toMovie, toTv } = await import("./tmdb.server");
+    const { tmdbFetch, toMovie, toTv } = await import("./wp.server");
     if (data.id.startsWith("tv-")) {
       const realId = data.id.slice(3);
       const res = await tmdbFetch(`/tv/${realId}/similar`);
@@ -221,7 +221,7 @@ export const fetchSimilar = createServerFn({ method: "POST" })
 export const searchMovies = createServerFn({ method: "POST" })
   .validator(z.object({ query: z.string().min(1) }))
   .handler(async ({ data }) => {
-    const { tmdbFetch, toMovie, toTv } = await import("./tmdb.server");
+    const { tmdbFetch, toMovie, toTv } = await import("./wp.server");
     const [res1, res2, res3] = await Promise.all([
       tmdbFetch("/search/multi", { query: data.query, page: "1" }),
       tmdbFetch("/search/multi", { query: data.query, page: "2" }),
@@ -296,7 +296,7 @@ export const searchFiltered = createServerFn({ method: "POST" })
     }),
   )
   .handler(async ({ data }) => {
-    const { tmdbFetch, toMovie } = await import("./tmdb.server");
+    const { tmdbFetch, toMovie } = await import("./wp.server");
     const q = (data.query ?? "").trim();
 
     const sortBy = (sort?: SearchSort) => {
@@ -354,7 +354,7 @@ export const searchFiltered = createServerFn({ method: "POST" })
 export const suggestTitles = createServerFn({ method: "POST" })
   .validator(z.object({ query: z.string().min(1) }))
   .handler(async ({ data }) => {
-    const { tmdbFetch } = await import("./tmdb.server");
+    const { tmdbFetch } = await import("./wp.server");
     const res = await tmdbFetch("/search/multi", { query: data.query, page: "1" });
     return (res.results || [])
       .filter((m: any) => m.media_type === "movie" || m.media_type === "tv")
@@ -372,7 +372,7 @@ export const suggestTitles = createServerFn({ method: "POST" })
 export const discoverByGenre = createServerFn({ method: "POST" })
   .validator(z.object({ genreId: z.string() }))
   .handler(async ({ data }) => {
-    const { tmdbFetch, toMovie } = await import("./tmdb.server");
+    const { tmdbFetch, toMovie } = await import("./wp.server");
     const [res1, res2, res3] = await Promise.all([
       tmdbFetch("/discover/movie", {
         with_genres: data.genreId,
@@ -401,7 +401,7 @@ export const discoverByGenre = createServerFn({ method: "POST" })
 export const discoverByGenreMixed = createServerFn({ method: "POST" })
   .validator(z.object({ genreId: z.string() }))
   .handler(async ({ data }) => {
-    const { tmdbFetch, toMovie, toTv } = await import("./tmdb.server");
+    const { tmdbFetch, toMovie, toTv } = await import("./wp.server");
     const [movieRes, tvRes] = await Promise.all([
       tmdbFetch("/discover/movie", {
         with_genres: data.genreId,
@@ -425,7 +425,7 @@ export const discoverByGenreMixed = createServerFn({ method: "POST" })
 export const fetchMoviesByIds = createServerFn({ method: "POST" })
   .validator(z.object({ ids: z.array(z.string()) }))
   .handler(async ({ data }) => {
-    const { tmdbFetch, toMovie } = await import("./tmdb.server");
+    const { tmdbFetch, toMovie } = await import("./wp.server");
     const results: PromiseSettledResult<any>[] = await Promise.allSettled(
       data.ids.map((tmdbId: string) =>
         tmdbFetch(`/movie/${tmdbId}`, { append_to_response: "videos" }),
@@ -442,7 +442,7 @@ export const fetchMoviesByIds = createServerFn({ method: "POST" })
 export const fetchRecommendations = createServerFn({ method: "POST" })
   .validator(z.object({ id: z.string() }))
   .handler(async ({ data }) => {
-    const { tmdbFetch, toMovie, toTv } = await import("./tmdb.server");
+    const { tmdbFetch, toMovie, toTv } = await import("./wp.server");
     if (data.id.startsWith("tv-")) {
       const realId = data.id.slice(3);
       const res = await tmdbFetch(`/tv/${realId}/recommendations`);
@@ -455,7 +455,7 @@ export const fetchRecommendations = createServerFn({ method: "POST" })
 export const searchPeople = createServerFn({ method: "POST" })
   .validator(z.object({ query: z.string().min(1) }))
   .handler(async ({ data }) => {
-    const { tmdbFetch } = await import("./tmdb.server");
+    const { tmdbFetch } = await import("./wp.server");
     const res = await tmdbFetch("/search/person", { query: data.query });
     return (res.results || []).slice(0, 10).map((p: any) => ({
       id: String(p.id),
@@ -469,7 +469,7 @@ export const searchPeople = createServerFn({ method: "POST" })
   });
 
 export const fetchGenres = createServerFn({ method: "GET" }).handler(async () => {
-  const { tmdbFetch } = await import("./tmdb.server");
+  const { tmdbFetch } = await import("./wp.server");
   const data = await tmdbFetch("/genre/movie/list");
   return (data.genres || []) as { id: number; name: string }[];
 });
@@ -477,42 +477,42 @@ export const fetchGenres = createServerFn({ method: "GET" }).handler(async () =>
 export const fetchTvSeason = createServerFn({ method: "POST" })
   .validator(z.object({ id: z.string(), season: z.number() }))
   .handler(async ({ data }) => {
-    const { tmdbFetch } = await import("./tmdb.server");
+    const { tmdbFetch } = await import("./wp.server");
     return tmdbFetch(`/tv/${data.id}/season/${data.season}`, { append_to_response: "credits" });
   });
 
 export const fetchMovieVideos = createServerFn({ method: "POST" })
   .validator(z.object({ id: z.string() }))
   .handler(async ({ data }) => {
-    const { fetchMovieVideosData } = await import("./tmdb.server");
+    const { fetchMovieVideosData } = await import("./wp.server");
     return fetchMovieVideosData(data.id);
   });
 
 export const fetchTitleLogo = createServerFn({ method: "POST" })
   .validator(z.object({ id: z.string() }))
   .handler(async ({ data }) => {
-    const { fetchTitleLogoById } = await import("./tmdb.server");
+    const { fetchTitleLogoById } = await import("./wp.server");
     return fetchTitleLogoById(data.id);
   });
 
 export const fetchTitleLogos = createServerFn({ method: "POST" })
   .validator(z.object({ ids: z.array(z.string()).max(30) }))
   .handler(async ({ data }) => {
-    const { fetchTitleLogosByIds } = await import("./tmdb.server");
+    const { fetchTitleLogosByIds } = await import("./wp.server");
     return fetchTitleLogosByIds(data.ids);
   });
 
 export const enrichCertifications = createServerFn({ method: "POST" })
   .validator(z.object({ items: z.array(z.any()) }))
   .handler(async ({ data }) => {
-    const { enrichCertifications: enrich } = await import("./tmdb.server");
+    const { enrichCertifications: enrich } = await import("./wp.server");
     return enrich(data.items);
   });
 
 export const fetchPersonDetails = createServerFn({ method: "POST" })
   .validator(z.object({ id: z.string() }))
   .handler(async ({ data }) => {
-    const { tmdbFetch } = await import("./tmdb.server");
+    const { tmdbFetch } = await import("./wp.server");
     const person = await tmdbFetch(`/person/${data.id}`);
     const credits = await tmdbFetch(`/person/${data.id}/combined_credits`);
     const mapCredit = (c: any) => ({
@@ -544,7 +544,7 @@ export const fetchPersonDetails = createServerFn({ method: "POST" })
 export const fetchWatchProviders = createServerFn({ method: "POST" })
   .validator(z.object({ id: z.string(), type: z.enum(["movie", "tv"]).default("movie") }))
   .handler(async ({ data }) => {
-    const { fetchWatchProviders: fetch } = await import("./tmdb.server");
+    const { fetchWatchProviders: fetch } = await import("./wp.server");
     const tmdbId = data.id.replace(/^tv-/, "");
     return fetch(tmdbId, data.type);
   });

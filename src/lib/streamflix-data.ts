@@ -32,7 +32,7 @@ import {
   enrichCertifications as enrichCertificationsFn,
 } from "./api/tmdb";
 import { fetchWatchProviders } from "./api/tmdb";
-import type { WatchProvider } from "./api/tmdb.server";
+import type { WatchProvider } from "./api/wp.server"; 
 
 export type { Movie };
 
@@ -234,10 +234,29 @@ export async function loadBrowseData(kind: BrowseKind = "home") {
   }
 }
 
-export async function movieById(id: string): Promise<Movie | null> {
+export async function movieById(id: string): Promise<any> {
   try {
-    return await fetchMovie({ data: { id } });
-  } catch {
+    const { tmdbFetch, toMovie } = await import("./api/wp.server");
+    const data = await tmdbFetch(`/movies`);
+    const allMovies = data.results || [];
+    
+    // Find the raw movie record matching your database index row ID
+    const rawMatched = allMovies.find((m: any) => String(m.id) === String(id));
+    
+    if (!rawMatched) {
+      console.warn(`[DIAGNOSTIC 1] No raw movie row found in API array for ID: ${id}`);
+      return null;
+    }
+    
+    console.log(`[DIAGNOSTIC 2] Raw row data found! code: ${rawMatched.code}. Transforming...`);
+    const transformedMovie = toMovie(rawMatched);
+    
+    console.log("[DIAGNOSTIC 3] Transformed movie keys:", Object.keys(transformedMovie));
+    console.log("[DIAGNOSTIC 4] check videoEmbedMain content:", transformedMovie.videoEmbedMain);
+    
+    return transformedMovie;
+  } catch (err) {
+    console.error("[DIAGNOSTIC ERROR] movieById collapsed:", err);
     return null;
   }
 }
