@@ -31,9 +31,9 @@ import { suggestTitles } from "@/lib/streamflix-data";
 
 const links = [
   { kind: "home", label: "Home" },
-  { kind: "tv", label: "Shows" },
+  // { kind: "tv", label: "Shows" },
   { kind: "movies", label: "Movies" },
-  { kind: "new", label: "New & Popular" },
+  //{ kind: "new", label: "New & Popular" },
 ] as const;
 
 export function Navbar() {
