@@ -108,7 +108,7 @@ function Landing() {
             <Logo className="[&>span]:text-3xl [&>span]:sm:text-5xl" />
             <div className="flex items-center gap-3">
               <a
-                href="https://github.com/Wayne-Inc/StreamFlix"
+                href="https://github.com/csoegi/streamflix"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-foreground transition-colors"
@@ -141,7 +141,7 @@ function Landing() {
               </Link>
               {!isInApp() && (
                 <a
-                  href="https://github.com/Wayne-Inc/StreamFlix/releases"
+                  href="https://github.com/csoegi/streamflix/releases"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 rounded-md border border-primary/40 bg-primary/10 px-6 py-3 text-base font-semibold text-primary hover:bg-primary/20 transition-colors"
@@ -306,7 +306,7 @@ function Landing() {
               <Instagram className="size-4" /> @itiswayneee
             </a>
             <a
-              href="https://github.com/Wayne-Inc/StreamFlix"
+              href="https://github.com/csoegi/streamflix"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors"

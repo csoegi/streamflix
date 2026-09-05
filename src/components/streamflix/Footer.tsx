@@ -9,7 +9,7 @@ export function Footer() {
       <div className="mx-auto max-w-6xl space-y-8">
         <div className="max-w-2xl">
           <p className="text-xs sm:text-sm">
-            Built by <strong className="text-foreground">Samwel Wayne</strong>. Open source, free to
+            Built by <strong className="text-foreground">Chris Soe</strong>. Open source, free to
             use, modify, and share.
           </p>
         </div>
@@ -32,7 +32,7 @@ export function Footer() {
             Privacy Policy
           </Link>
           <a
-            href="https://github.com/Wayne-Inc/StreamFlix"
+            href="https://github.com/csoegi/streamflix"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 transition hover:text-foreground"
@@ -42,7 +42,7 @@ export function Footer() {
           </a>
           {!isInApp() && (
             <a
-              href="https://github.com/Wayne-Inc/StreamFlix/releases"
+              href="https://github.com/csoegi/streamflix/releases"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 rounded-md border border-primary/40 bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary transition hover:bg-primary/20"
