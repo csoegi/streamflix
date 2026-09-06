@@ -1,4 +1,3 @@
-import { getMovieById, toMovie } from "./api/wp.server";
 import { Movie } from './types';
 import {
   fetchTrending,
@@ -238,6 +237,8 @@ export async function loadBrowseData(kind: BrowseKind = "home") {
 
 export async function movieById(id: string | number): Promise<any> {
   try {
+    const { getMovieById, toMovie } = await import("./api/wp.server");
+    
     const cleanId = String(id).trim();
 
     const rawMatched = await getMovieById(cleanId);  
