@@ -131,8 +131,10 @@ function ExploreGenrePage() {
       }),
     });
     
-    // Smoothly scroll the user back to the top of the grid view window on transition updates
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+     // FIX: Encapsulate browser-only window objects in SSR-safe conditional to avoid hydration errors
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   return (
