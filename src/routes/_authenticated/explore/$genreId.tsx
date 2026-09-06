@@ -17,22 +17,29 @@ interface WPGenreTerm {
   count: number;
 }
 
+// 🟢 FIXED: Explicitly register page inside the Zod schema validator map
 const exploreSearchSchema = z.object({
   q: z.string().optional().catch(""),
+  page: z.number().optional().default(1).catch(1), // Added tracking rule
 });
 
 export const Route = createFileRoute("/_authenticated/explore/$genreId")({
   validateSearch: exploreSearchSchema,
+  shouldReload: true, // 🟢 FORCE LOADER TO EXECUTE INSTANTLY ON ANY SEARCH PARAM MUTATION
   loader: async ({ params, location }) => {
     const genreSlug = params.genreId;
     const searchParams = new URLSearchParams(location.search);
     const fallbackName = searchParams.get('q') || "Explore";
-    
+    // Track the active pagination page from the URL string parameters (fallback to page 1)
+    const activePage = searchParams.get('page') ? parseInt(searchParams.get('page')!, 10) : 1;
+
     const { FILMJEPANG_API_BASE_URL, FILMJEPANG_API_KEY } = getServerConfig();
     
     let genres: WPGenreTerm[] = [];
     let items: Movie[] = [];
-    
+    let totalPages = 1;
+    let totalResults = 0;
+
     try {
       // 1. Fetch live genres from the WordPress API to populate the chips panel
       const genresRes = await fetch(`${FILMJEPANG_API_BASE_URL}/genres`, {
@@ -49,7 +56,7 @@ export const Route = createFileRoute("/_authenticated/explore/$genreId")({
       }
 
       // 2. Fetch movies belonging to this specific genre slug
-      const moviesRes = await fetch(`${FILMJEPANG_API_BASE_URL}/genres/${genreSlug}?per_page=48`, {
+      const moviesRes = await fetch(`${FILMJEPANG_API_BASE_URL}/genres/${genreSlug}?page=${activePage}&per_page=35`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${FILMJEPANG_API_KEY}`,
@@ -59,6 +66,8 @@ export const Route = createFileRoute("/_authenticated/explore/$genreId")({
       if (moviesRes.ok) {
         const wpData = await moviesRes.json();
         items = (wpData.results || []).map((m: any) => toMovie(m));
+        totalPages = wpData.total_pages || 1;
+        totalResults = wpData.total_results || 0;
       }
     } catch (err) {
       console.error("Explore genre slug loader error:", err);
@@ -68,7 +77,7 @@ export const Route = createFileRoute("/_authenticated/explore/$genreId")({
     const matchedTerm = genres.find((g) => g.slug === genreSlug);
     const genreName = matchedTerm ? matchedTerm.name : fallbackName;
 
-    return { genreId: genreSlug, genreName, genres, items };
+    return { genreId: genreSlug, genreName, genres, items, totalPages, totalResults, activePage };
   },
   head: ({ loaderData }) => ({
     meta: [{ title: `${loaderData?.genreName || "Explore"} — StreamFlix` }],
@@ -102,16 +111,29 @@ export const Route = createFileRoute("/_authenticated/explore/$genreId")({
 });
 
 function ExploreGenrePage() {
-  const { genreId, genreName, genres, items } = Route.useLoaderData();
-  const [page, setPage] = useState(1);
+  const { genreId, genreName, genres, items, totalPages, totalResults, activePage } = Route.useLoaderData();
   const navigate = useNavigate();
 
   const safeGenres = genres || [];
   const safeItems = items || [];
   const hero = safeItems[0];
 
-  const pageCount = Math.max(1, Math.ceil(safeItems.length / 24));
-  const visible = safeItems.slice((page - 1) * 24, page * 24);
+  const visible = items || []; 
+  const pageCount = totalPages; 
+
+   // 🟢 FIXED: Clean, synchronous search parameter state mapping function
+  const handlePageChange = (targetPage: number) => {
+    navigate({
+      to: '.', // Targets the exact active path route location
+      search: (prev) => ({ 
+        ...prev, 
+        page: targetPage // Safely mutates tracked schema integers
+      }),
+    });
+    
+    // Smoothly scroll the user back to the top of the grid view window on transition updates
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
     <div className="min-h-dvh bg-background">
@@ -132,7 +154,7 @@ function ExploreGenrePage() {
           </div>
           <h1 className="mt-1 text-4xl font-black tracking-tight sm:text-6xl text-white drop-shadow-md">{genreName}</h1>
           <p className="mt-2 max-w-xl text-sm text-foreground/80 sm:text-base drop-shadow">
-            {safeItems.length} titles hand-picked to match this vibe.
+            {totalResults} titles hand-picked to match this vibe.
           </p>
         </div>
       </section>
@@ -151,7 +173,6 @@ function ExploreGenrePage() {
                 to="/explore/$genreId"
                 params={{ genreId: currentSlug }} // FIX: Routes dynamically via string slugs
                 search={{ q: g.name }}
-                onClick={() => setPage(1)}
                 className={`rounded-full border px-4 py-2 text-sm transition font-medium shadow-sm ${
                   active
                     ? "border-white bg-white text-black font-semibold scale-105"
@@ -179,34 +200,81 @@ function ExploreGenrePage() {
             </div>
             
             {pageCount > 1 && (
-              <div className="mt-8 flex items-center justify-center gap-2">
-                <button
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  className="inline-flex items-center gap-1 rounded-md border border-border px-3 py-2 text-sm text-muted-foreground hover:text-foreground disabled:opacity-40"
-                >
-                  <ChevronLeft className="size-4" /> Previous
-                </button>
-                {Array.from({ length: pageCount }, (_, i) => i + 1).map((p) => (
+              <div className="mt-12 flex flex-col items-center gap-4 sm:flex-row sm:justify-center pt-6 border-t border-white/5">
+
+                <div className="flex flex-wrap items-center justify-center gap-1.5">
+                  
+                  {/* 1. Jump to FIRST Page (<<) */}
                   <button
-                    key={p}
-                    onClick={() => setPage(p)}
-                    className={`rounded-md px-3 py-2 text-sm font-medium ${
-                      p === page
-                        ? "bg-white text-black font-semibold shadow-md"
-                        : "border border-border text-muted-foreground hover:text-foreground hover:bg-white/5"
-                    }`}
+                    onClick={() => handlePageChange(1)}
+                    disabled={activePage === 1}
+                    title="First Page"
+                    className="inline-flex size-9 items-center justify-center rounded-lg border border-border text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-white/5 disabled:opacity-30 disabled:pointer-events-none transition"
                   >
-                    {p}
+                    &laquo;
                   </button>
-                ))}
-                <button
-                  onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
-                  disabled={page === pageCount}
-                  className="inline-flex items-center gap-1 rounded-md border border-border px-3 py-2 text-sm text-muted-foreground hover:text-foreground disabled:opacity-40"
-                >
-                  Next <ChevronRight className="size-4" />
-                </button>
+
+                  {/* 2. PREVIOUS Button */}
+                  <button
+                    onClick={() => handlePageChange(Math.max(1, activePage - 1))}
+                    disabled={activePage === 1}
+                    className="inline-flex h-9 items-center gap-1 rounded-lg border border-border px-3 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-white/5 disabled:opacity-30 disabled:pointer-events-none transition"
+                  >
+                    Previous
+                  </button>
+
+                  {/* 3. DYNAMIC SLIDING WINDOW NUMBERS CONTROL */}
+                  {(() => {
+                    const maxVisible = 10;
+                    let startPage = Math.max(1, activePage - Math.floor(maxVisible / 2));
+                    let endPage = startPage + maxVisible - 1;
+
+                    // Adjust windows constraints securely if hitting max catalog boundaries
+                    if (endPage > pageCount) {
+                      endPage = pageCount;
+                      startPage = Math.max(1, endPage - maxVisible + 1);
+                    }
+
+                    const visiblePageNumbers = [];
+                    for (let pageNum = startPage; endPage >= pageNum; pageNum++) {
+                      visiblePageNumbers.push(pageNum);
+                    }
+
+                    return visiblePageNumbers.map((p) => (
+                      <button
+                        key={p}
+                        onClick={() => handlePageChange(p)}
+                        className={`inline-flex size-9 items-center justify-center rounded-lg text-sm font-bold transition shadow-sm ${
+                          p === activePage
+                            ? "bg-white text-black font-extrabold scale-105 shadow-md"
+                            : "border border-border text-muted-foreground hover:text-foreground hover:bg-white/5"
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    ));
+                  })()}
+
+                  {/* 4. NEXT Button */}
+                  <button
+                    onClick={() => handlePageChange(Math.min(pageCount, activePage + 1))}
+                    disabled={activePage === pageCount}
+                    className="inline-flex h-9 items-center gap-1 rounded-lg border border-border px-3 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-white/5 disabled:opacity-30 disabled:pointer-events-none transition"
+                  >
+                    Next
+                  </button>
+
+                  {/* 5. Jump to LAST Page (>>) */}
+                  <button
+                    onClick={() => handlePageChange(pageCount)}
+                    disabled={activePage === pageCount}
+                    title="Last Page"
+                    className="inline-flex size-9 items-center justify-center rounded-lg border border-border text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-white/5 disabled:opacity-30 disabled:pointer-events-none transition"
+                  >
+                    &raquo;
+                  </button>
+
+                </div>
               </div>
             )}
           </div>
