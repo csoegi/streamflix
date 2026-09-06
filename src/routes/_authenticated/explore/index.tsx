@@ -38,7 +38,7 @@ export const Route = createFileRoute("/_authenticated/explore/")({
       console.error("Explore index loader taxonomy fetch failure:", err);
     }
 
-    // 2. Fetch popular movies (this hits your tmdbFetch routing proxy layout automatically)
+    // 2. Fetch popular movies (this hits your getMovies routing proxy layout automatically)
     const popular = await fetchPopular();
     
     return { 

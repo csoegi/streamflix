@@ -25,8 +25,7 @@ export const Route = createFileRoute("/_authenticated/watch/$id")({
       console.error("Watch loader failed to fetch content metadata:", err);
     }
     return { 
-      movie,
-      isWPContent: movie?.isWPContent === true 
+      movie
     };
   },
   // FIX: Replaced custom seoMetaFor wrapper with clean standard metadata generation
@@ -64,42 +63,8 @@ export const Route = createFileRoute("/_authenticated/watch/$id")({
 // 2. MAIN ORCHESTRATION WATCH COMPONENT
 // =========================================================================
 function WatchComponent() {
-  const { movie, isWPContent } = Route.useLoaderData();
-
-  if (isWPContent) {
-    // Render the newly introduced high-performance clean layout for WordPress content
-    return <WordPressPlayerView movie={movie} />;
-  }
-
-  // =========================================================================
-  // ORIGINAL COMPONENT UI VIEW FALLBACK SECTION
-  // =========================================================================
-  // Paste your original bloated template component rendering code right here inside this return block.
-  // It will render completely isolated and safe whenever (?source=wp) parameter is absent!
-  return (
-    <div className="min-h-screen bg-black text-white p-8 pt-24 flex items-center justify-center">
-      <div className="max-w-2xl text-center space-y-6 bg-zinc-950 p-8 rounded-2xl border border-zinc-900 shadow-2xl">
-        <div className="w-16 h-16 bg-zinc-900 rounded-full flex items-center justify-center mx-auto text-amber-500 border border-zinc-800">
-          <Film className="w-8 h-8" />
-        </div>
-        <h1 className="text-3xl font-extrabold tracking-tight">{movie.title}</h1>
-        <p className="text-zinc-400 text-sm leading-relaxed">{movie.description}</p>
-        <div className="p-4 bg-zinc-900/50 rounded-xl border border-zinc-850 inline-block text-xs text-zinc-500 text-left space-y-2">
-          <p className="font-semibold text-zinc-300">💡 How to restore your original view code block here:</p>
-          <ul className="list-disc pl-4 space-y-1">
-            <li>Open your original backup repository snapshot copy of watch.$id.tsx</li>
-            <li>Copy everything inside the original return() component tree view layout</li>
-            <li>Replace this return block with that exact copied markup structure code</li>
-          </ul>
-        </div>
-        <div className="pt-4">
-          <Link to="/" className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-black font-semibold rounded-xl text-sm shadow hover:bg-zinc-200 transition">
-            <ArrowLeft className="w-4 h-4" /> Return to Dashboard Home
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
+  const { movie } = Route.useLoaderData();
+  return <WordPressPlayerView movie={movie} />;
 }
 
 // =========================================================================

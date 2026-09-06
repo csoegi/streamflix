@@ -14,7 +14,7 @@ if (!TMDB_API_KEY) {
   process.exit(1);
 }
 
-async function tmdbFetch(path, params = {}) {
+async function getMovies(path, params = {}) {
   const url = new URL(`${TMDB_BASE}${path}`);
   url.searchParams.set("api_key", TMDB_API_KEY);
   url.searchParams.set("language", "en-US");
@@ -41,7 +41,7 @@ function escapeXml(str) {
 async function fetchAllPages(path, maxPages = 5, params = {}) {
   const allResults = [];
   for (let page = 1; page <= maxPages; page++) {
-    const data = await tmdbFetch(path, { ...params, page: String(page) });
+    const data = await getMovies(path, { ...params, page: String(page) });
     if (!data.results?.length) break;
     allResults.push(...data.results);
   }
@@ -77,7 +77,7 @@ async function main() {
 
   // Genre/explore pages
   console.log("Fetching genres...");
-  const genres = await tmdbFetch("/genre/movie/list");
+  const genres = await getMovies("/genre/movie/list");
   for (const genre of genres.genres || []) {
     urls.push({
       loc: `${SITE_URL}/explore/${genre.id}`,

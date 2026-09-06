@@ -24,7 +24,6 @@ export interface Movie {
   trailer?: string;
 
   // --- Extended Structural Fields for WordPress Streams Custom Execution ---
-  isWPContent?: boolean; // Vital flag separating playback engine components routing path targets
   code?: string;
   slug?: string;
   tags?: string[];

@@ -26,7 +26,7 @@ export interface WatchProvidersResult {
   }>;
 }
 
-export async function tmdbFetch(path: string, params: Record<string, string> = {}): Promise<any> {
+export async function getMovies(path: string, params: Record<string, string> = {}): Promise<any> {
     const page = params.page ? parseInt(params.page) : 1;
     const perPage = params.per_page ? parseInt(params.per_page) : 20;
 
@@ -40,16 +40,34 @@ export async function tmdbFetch(path: string, params: Record<string, string> = {
         });
         if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
         
-        const wpData = await res.json();
+        const data = await res.json();
         return {
-            page: wpData.page,
-            total_results: wpData.total_results,
-            total_pages: wpData.total_pages,
-            results: wpData.results || [] 
+            page: data.page,
+            total_results: data.total_results,
+            total_pages: data.total_pages,
+            results: data.results || [] 
         };
     } catch (err) {
-        console.error("WordPress Proxy Error:", err);
+        console.error("API Error:", err);
         return { page: 1, total_results: 0, total_pages: 0, results: [] };
+    }
+}
+
+export async function getMovieById(id: string): Promise<any> {
+    try {
+        const res = await fetch(`${FILMJEPANG_API_BASE_URL}/${id}`, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${FILMJEPANG_API_KEY}`,
+                "Content-Type": "application/json"
+            }
+        });
+        if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
+        
+        return await res.json();
+    } catch (err) {
+        console.error("API Error:", err);
+        return null;
     }
 }
 
@@ -103,7 +121,6 @@ export function toMovie(m: any): Movie {
         download_links: m.download_links || m.downloadLinks || []
     };
 }
-
 
 export function toTv(m: any): Movie {
   const epRuntime = Array.isArray(m.episode_run_time) ? m.episode_run_time[0] : null;
@@ -162,7 +179,7 @@ export function extractCertification(m: any, country = "US"): string {
 }
 
 export async function fetchWatchProviders(tmdbId: string, type: "movie" | "tv"): Promise<WatchProvidersResult["results"]> {
-  const data = await tmdbFetch(`/${type}/${tmdbId}/watch/providers`);
+  const data = await getMovies(`/${type}/${tmdbId}/watch/providers`);
   return data.results || {};
 }
 

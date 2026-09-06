@@ -235,29 +235,21 @@ export async function loadBrowseData(kind: BrowseKind = "home") {
   }
 }
 
-export async function movieById(id: string): Promise<any> {
+export async function movieById(id: string | number): Promise<any> {
   try {
-    const { tmdbFetch, toMovie } = await import("./api/wp.server");
-    const data = await tmdbFetch(`/movies`);
-    const allMovies = data.results || [];
+    const { getMovieById, toMovie } = await import("./api/wp.server");
     
-    // Find the raw movie record matching your database index row ID
-    const rawMatched = allMovies.find((m: any) => String(m.id) === String(id));
-    
-    if (!rawMatched) {
-      console.warn(`[DIAGNOSTIC 1] No raw movie row found in API array for ID: ${id}`);
+    const cleanId = String(id).trim();
+
+    const rawMatched = await getMovieById(cleanId);  
+
+    if (!rawMatched || !rawMatched.id) {
       return null;
     }
     
-    console.log(`[DIAGNOSTIC 2] Raw row data found! code: ${rawMatched.code}. Transforming...`);
-    const transformedMovie = toMovie(rawMatched);
-    
-    console.log("[DIAGNOSTIC 3] Transformed movie keys:", Object.keys(transformedMovie));
-    console.log("[DIAGNOSTIC 4] check videoEmbedMain content:", transformedMovie.video_embed_main);
-    
-    return transformedMovie;
+    return toMovie(rawMatched);;
   } catch (err) {
-    console.error("[DIAGNOSTIC ERROR] movieById collapsed:", err);
+    console.error("Error transforming movie:", err);
     return null;
   }
 }
