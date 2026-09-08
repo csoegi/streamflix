@@ -102,7 +102,7 @@ function MovieSkeleton() {
 
 export const Route = createFileRoute("/_authenticated/movie/$id")({
   loader: async ({ params }) => {
-    const extraGenres = ["27", "878", "35", "53"];
+    const extraGenres = ["jav", "film-jepang-trending", "film-bokep-tidak-sensor", "jav-populer"];
     const [movie, similar, recommendations, logo, ...genreResults] = await Promise.all([
       movieById(params.id),
       loadSimilar(params.id),
@@ -161,15 +161,10 @@ export const Route = createFileRoute("/_authenticated/movie/$id")({
 function MoviePage() {
   const { movie, similar, genreRows, recommendations, logo } = Route.useLoaderData();
   const genreLabels: Record<string, string> = {
-    "27": "Horror",
-    "878": "Sci-Fi",
-    "35": "Comedy",
-    "53": "Thriller",
-    "28": "Action",
-    "12": "Adventure",
-    "18": "Drama",
-    "10749": "Romance",
-    "9648": "Mystery",
+    "jav": "JAV",
+    "film-jepang-trending": "Trending",
+    "jav-populer": "Popular",
+    "film-bokep-tidak-sensor": "Uncensored"
   };
   const isTv = movie.id.startsWith("tv-");
   const titleLogoUrl = logo?.filePath ? buildTitleLogoUrl(logo.filePath) : null;
@@ -306,12 +301,14 @@ function MoviePage() {
       <Navbar />
           <section className="relative pt-16 md:flex md:min-h-[85vh] md:items-center md:pt-20 bg-background overflow-hidden">
         
-        {/* LAYER 1: Ambient Blurred Background (Brings portrait artwork out to widescreen sides) */}
+        {/* LAYER 1: Ambient Blurred Background (Brings portrait artwork out to widescreen sides) 
+            blur-sm | blur |blur-md | blur-lg | blur-xl| blur-3xl
+        */}
         <div className="pointer-events-none absolute inset-x-0 top-0 h-[52vh] overflow-hidden sm:h-[58vh] md:inset-y-0 md:h-auto md:w-full select-none scale-110 transform z-0">
           <img 
             src={movie.backdrop} 
             alt="" 
-            className="absolute inset-0 size-full object-cover blur-3xl opacity-30" 
+            className="absolute inset-0 size-full object-cover blur-lg opacity-70 brightness-70" 
           />
         </div>
 
@@ -371,7 +368,8 @@ function MoviePage() {
 
               <div className="flex flex-wrap gap-2">
                 {movie.genres && movie.genres.length > 0 ? (
-                  movie.genres.map((genreName: string, i: number) => {
+                  // Pick up to 10 genres to be displayed
+                  movie.genres.slice(0, 10).map((genreName: string, i: number) => {
                     // Normalize the name string directly into a clean lowercase URL slug asset tracker
                     const genreSlug = genreName.toLowerCase().trim().replace(/\s+/g, '-');
                     

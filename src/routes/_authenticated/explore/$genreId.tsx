@@ -1,83 +1,39 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
-import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { Navbar } from "@/components/streamflix/Navbar";
 import { Footer } from "@/components/streamflix/Footer";
 import { MovieCard } from "@/components/streamflix/MovieCard";
 import { Skeleton } from "@/components/ui/skeleton";
-import { toMovie } from "@/lib/api/wp.server";
 import type { Movie } from "@/lib/types";
-import { getServerConfig } from "@/lib/config.server";
+import { fetchGenres, fetchMoviesByGenre } from "@/lib/api/tmdb";
 
-interface WPGenreTerm {
-  term_id: number;
-  name: string;
-  slug: string;
-  count: number;
-}
-
-// 🟢 FIXED: Explicitly register page inside the Zod schema validator map
-const exploreSearchSchema = z.object({
-  q: z.string().optional().catch(""),
-  page: z.number().optional().default(1).catch(1), // Added tracking rule
+const searchParamSchema = z.object({
+  genreSlug: z.string().optional(),
+  page: z.number().optional().default(1).catch(1),
 });
 
 export const Route = createFileRoute("/_authenticated/explore/$genreId")({
-  validateSearch: exploreSearchSchema,
-  shouldReload: true, // 🟢 FORCE LOADER TO EXECUTE INSTANTLY ON ANY SEARCH PARAM MUTATION
-  loader: async ({ params, location }) => {
+  validateSearch: searchParamSchema,
+  shouldReload: true,
+  loader: async ({ params }) => {
     const genreSlug = params.genreId;
     const searchParams = new URLSearchParams(location.search);
-    const fallbackName = searchParams.get('q') || "Explore";
-    // Track the active pagination page from the URL string parameters (fallback to page 1)
     const activePage = searchParams.get('page') ? parseInt(searchParams.get('page')!, 10) : 1;
 
-    const { FILMJEPANG_API_BASE_URL, FILMJEPANG_API_KEY } = getServerConfig();
-    
-    let genres: WPGenreTerm[] = [];
-    let items: Movie[] = [];
-    let totalPages = 1;
-    let totalResults = 0;
-
-    try {
-      // 1. Fetch live genres from the WordPress API to populate the chips panel
-      const genresRes = await fetch(`${FILMJEPANG_API_BASE_URL}/genres`, {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${FILMJEPANG_API_KEY}`,
-          "Content-Type": "application/json"
-        }
-      });
-      if (genresRes.ok) {
-        genres = await genresRes.json();
-        genres.sort((a, b) => b.count - a.count); // Sort genres by count
-        genres = genres.slice(0, 10); // Limit to top 10 genres for UI
-      }
-
-      // 2. Fetch movies belonging to this specific genre slug
-      const moviesRes = await fetch(`${FILMJEPANG_API_BASE_URL}/genres/${genreSlug}?page=${activePage}&per_page=35`, {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${FILMJEPANG_API_KEY}`,
-          "Content-Type": "application/json"
-        }
-      });
-      if (moviesRes.ok) {
-        const wpData = await moviesRes.json();
-        items = (wpData.results || []).map((m: any) => toMovie(m));
-        totalPages = wpData.total_pages || 1;
-        totalResults = wpData.total_results || 0;
-      }
-    } catch (err) {
-      console.error("Explore genre slug loader error:", err);
-    }
-
-    // Resolve the exact human-readable name of the current genre matching the slug
+    const [genres, movieList] = await Promise.all([
+      fetchGenres(),
+      fetchMoviesByGenre({ data : { genreSlug : genreSlug } })
+    ]);
+    const top10Genres = genres.sort((a, b) => b.count - a.count).slice(0, 10);
+    const totalPages = movieList.total_pages;
+    const totalResults = movieList.total_results;
+    const movies = movieList.results;
     const matchedTerm = genres.find((g) => g.slug === genreSlug);
-    const genreName = matchedTerm ? matchedTerm.name : fallbackName;
+    const genreName = matchedTerm ? matchedTerm.name : "";
 
-    return { genreId: genreSlug, genreName, genres, items, totalPages, totalResults, activePage };
+    return { genreId: genreSlug, genreName, top10Genres, movies, totalPages, totalResults, activePage };
   },
   head: ({ loaderData }) => ({
     meta: [{ title: `${loaderData?.genreName || "Explore"} — StreamFlix` }],
@@ -111,17 +67,11 @@ export const Route = createFileRoute("/_authenticated/explore/$genreId")({
 });
 
 function ExploreGenrePage() {
-  const { genreId, genreName, genres, items, totalPages, totalResults, activePage } = Route.useLoaderData();
+  const { genreId, genreName, top10Genres, movies, totalPages, totalResults, activePage } = Route.useLoaderData();
   const navigate = useNavigate();
-
-  const safeGenres = genres || [];
-  const safeItems = items || [];
-  const hero = safeItems[0];
-
-  const visible = items || []; 
+  const hero = movies[0];
+  const visible = movies || []; 
   const pageCount = totalPages; 
-
-   // 🟢 FIXED: Clean, synchronous search parameter state mapping function
   const handlePageChange = (targetPage: number) => {
     navigate({
       to: '.', // Targets the exact active path route location
@@ -130,9 +80,6 @@ function ExploreGenrePage() {
         page: targetPage // Safely mutates tracked schema integers
       }),
     });
-    
-    // Smoothly scroll the user back to the top of the grid view window on transition updates
-    // window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -163,20 +110,19 @@ function ExploreGenrePage() {
         
         {/* Dynamic Category Navigation Chips Panel */}
         <div className="mt-8 flex flex-wrap gap-2">
-          {safeGenres.map((g: any) => {
+          {top10Genres.map((g: any) => {
             const currentSlug = g.slug || g.name.toLowerCase().trim().replace(/\s+/g, '-');
             const active = currentSlug === genreId;
             
             return (
               <Link
-                key={g.term_id || g.id}
+                key={g.term_id}
                 to="/explore/$genreId"
-                params={{ genreId: currentSlug }} // FIX: Routes dynamically via string slugs
-                search={{ q: g.name }}
+                params={{ genreId: currentSlug }}
                 className={`rounded-full border px-4 py-2 text-sm transition font-medium shadow-sm ${
                   active
                     ? "border-white bg-white text-black font-semibold scale-105"
-                    : "border-border text-muted-foreground hover:border-primary hover:text-foreground hover:bg-white/5"
+                    : "border-border text-muted-foreground hover:border-pink-500 hover:text-foreground hover:bg-white/5"
                 }`}
               >
                 {g.name}
@@ -185,10 +131,10 @@ function ExploreGenrePage() {
           })}
         </div>
 
-        {safeItems.length > 0 ? (
+        {movies.length > 0 ? (
           <div className="mt-8">
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7">
-              {visible.map((m) => (
+              {visible.map((m: Movie) => (
                 <button
                   key={m.id}
                   onClick={() => navigate({ to: "/movie/$id", params: { id: m.id } })}
@@ -225,7 +171,7 @@ function ExploreGenrePage() {
 
                   {/* 3. DYNAMIC SLIDING WINDOW NUMBERS CONTROL */}
                   {(() => {
-                    const maxVisible = 10;
+                    const maxVisible = 5;
                     let startPage = Math.max(1, activePage - Math.floor(maxVisible / 2));
                     let endPage = startPage + maxVisible - 1;
 
