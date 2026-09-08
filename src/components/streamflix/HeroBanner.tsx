@@ -92,7 +92,9 @@ export function HeroBanner({ slides }: { slides: Movie[] }) {
               isCurrent ? "opacity-100 z-0" : "opacity-0 z-0 pointer-events-none"
             }`}
           >
-            {/* LAYER 1: Ambient Blurred Background (Brings portrait artwork out to wide screen edges) */}
+            {/* LAYER 1: Ambient Blurred Background (Brings portrait artwork out to wide screen edges) 
+                blur-sm | blur |blur-md | blur-lg | blur-xl| blur-3xl
+            */}
             <div className="absolute inset-0 size-full select-none pointer-events-none overflow-hidden scale-110 transform">
               {imageSrc && (
                 <img
@@ -101,7 +103,7 @@ export function HeroBanner({ slides }: { slides: Movie[] }) {
                   loading={idx === i ? "eager" : "lazy"}
                   decoding="async"
                   fetchPriority={idx === i ? "high" : "low"}
-                  className={`size-full object-cover blur-3xl opacity-30 ${
+                  className={`size-full object-cover blur-lg opacity-70 brightness-70 ${
                     isCurrent ? "animate-ken-burns" : ""
                   }`}
                 />
