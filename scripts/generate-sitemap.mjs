@@ -77,7 +77,7 @@ async function main() {
 
   // Genre/explore pages
   console.log("Fetching genres...");
-  const genres = await getMovies("/genre/movie/list");
+  const genres = await getMovies();
   for (const genre of genres.genres || []) {
     urls.push({
       loc: `${SITE_URL}/explore/${genre.id}`,
