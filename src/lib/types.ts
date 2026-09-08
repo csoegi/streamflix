@@ -1,36 +1,33 @@
 export interface Movie {
-  // --- Core Pre-existing App Shell Fields ---
   id: string; // Numerical post ID converted safely to a string matching TMDB schemas
-  title: string;
-  description: string; // Standard text property (Maps to WP overview/short_description)
-  year: number;        // Clean Integer (Extracted safely from WP array index)
-  releaseDate: string;
-  rating: string;
-  runtime: string;
-  genres: string[];
-  genreIds: number[];
-  poster: string;
-  backdrop: string;
-  backdropSm: string;
-  cast: string[];
-  castPfp: string[];
-  castRoles: string[];
-  castIds: number[];
-  directorId: string;   // Clean String (Extracted safely from WP directors array index)
-  directorPfp: string;
+  code?: string;
+  slug?: string;
+  title?: string;
+  description?: string; // Standard text property (Maps to WP overview/short_description)
+  year?: number;        // Clean Integer (Extracted safely from WP array index)
+  releaseDate?: string;
+  rating?: string;
+  runtime?: string;
+  genres?: string[];
+  genreIds?: number[];
+  poster?: string;
+  backdrop?: string;
+  backdropSm?: string;
+  cast?: string[];
+  castPfp?: string[];
+  castRoles?: string[];
+  castIds?: number[];
+  directorId?: string;   // Clean String (Extracted safely from WP directors array index)
+  director?:  string;
+  directorPfp?: string;
   match: number;
   score?: number;
   popularity?: number;  
   trailer?: string;
-
-  // --- Extended Structural Fields for WordPress Streams Custom Execution ---
-  code?: string;
-  slug?: string;
   tags?: string[];
   series?: string[];
   imdb_score?: string;
   vote_count?: number;
-  content_rating?: string;
   categories?: string[];
   production_company?: string;
   origin_country?: string[];
@@ -38,6 +35,8 @@ export interface Movie {
   video_embed_main?: string;
   video_embeds?: WPServerEmbed[];
   download_links?: WPDownloadLink[];
+  numberOfSeasons?: number;
+  numberOfEpisodes?: number
   views?: {
     today: number;
     weekly: number;
@@ -50,6 +49,20 @@ export interface Movie {
     focus_keywords: string[];
     app_target_url: string;
   };
+}
+
+export interface MovieList {
+    page: number;
+    total_pages: number;
+    total_results: number;
+    results: Movie[];
+}
+
+export interface WPTerm {
+  term_id: number;
+  name: string;
+  slug: string;
+  count: number;
 }
 
 export interface WPServerEmbed {

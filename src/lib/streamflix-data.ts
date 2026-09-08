@@ -30,6 +30,7 @@ import {
   fetchUpcomingCalendar,
   fetchAiringCalendar,
   enrichCertifications as enrichCertificationsFn,
+  fetchMoviesByGenre,
 } from "./api/tmdb";
 
 import { fetchWatchProviders } from "./api/tmdb";
@@ -46,106 +47,89 @@ export const defaultProfiles = [
   { id: "p4", name: "Kids", color: "from-emerald-400 to-teal-600", kids: true },
 ];
 
-const HOME_GENRES = [
-  { id: "28", name: "Action" },
-  { id: "12", name: "Adventure" },
-  { id: "16", name: "Animation" },
-  { id: "35", name: "Comedy" },
-  { id: "80", name: "Crime" },
-  { id: "99", name: "Documentary" },
-  { id: "18", name: "Drama" },
-  { id: "10751", name: "Family" },
-  { id: "14", name: "Fantasy" },
-  { id: "36", name: "History" },
-  { id: "27", name: "Horror" },
-  { id: "10402", name: "Music" },
-  { id: "9648", name: "Mystery" },
-  { id: "10749", name: "Romance" },
-  { id: "878", name: "Sci-Fi" },
-  { id: "53", name: "Thriller" },
-  { id: "10752", name: "War" },
-  { id: "37", name: "Western" },
-];
-
 async function loadHome() {
   const [
-    trendingAllWeek,
-    nowPlaying,
-    topRated,
-    topRatedTv,
-    trendingAllDay,
-    ...genreItems
+    genre1,
+    genre2,
+    genre3,
+    genre4,
+    genre5,
+    genre6,
+    genre7,
+    genre8,
+    genre9,
+    genre10
   ] = await Promise.all([
-    fetchTrendingAllWeek(),
-    fetchNowPlaying(),
-    fetchTopRated(),
-    fetchTopRatedTv(),
-    fetchTrendingAllDay(),
-    ...HOME_GENRES.map((g) => discoverByGenreMixed({ data: { genreId: g.id } })),
+    discoverByGenre({ data: { genreId: "film-jepang-trending" } }),
+    discoverByGenre({ data: { genreId: "jav-populer" } }),
+    discoverByGenre({ data: { genreId: "film-jepang-tidak-sensor" } }),
+    discoverByGenre({ data: { genreId: "big-tits" } }),    
+    discoverByGenre({ data: { genreId: "cosplay" } }),
+    discoverByGenre({ data: { genreId: "cheating-wife" } }),  
+    discoverByGenre({ data: { genreId: "mature"} }),
+    discoverByGenre({ data: { genreId: "older-sister" } }),
+    discoverByGenre({ data: { genreId: "soapland" } }),
+    discoverByGenre({ data: { genreId: "school-girls" } }),
   ]);
 
-  let recommendations: Movie[] = [];
-  try {
-    if (trendingAllWeek.length > 0) {
-      recommendations = await fetchRecommendations({ data: { id: trendingAllWeek[0].id } });
-    }
-  } catch {}
-
-  const top10Today = trendingAllDay.slice(0, 10);
-  const top10TrendingWeek = trendingAllWeek.slice(0, 10);
-
-  const genreGroups = HOME_GENRES.map((g, i) => ({ id: g.id, name: g.name, items: genreItems[i] }));
-
   return {
-    heroSlides: await enrichCertificationsFn({ data: { items: trendingAllWeek.slice(0, 5) } }),
-    top10Today,
-    top10TrendingWeek,
-    genreGroups,
+    heroSlides: await enrichCertificationsFn({ data: { items: genre1.slice(0, 3) } }),
+    top10Today: [],
+    genreGroups: [],
     rows: [
-      { title: "Trending Now", items: trendingAllWeek },
-      ...(recommendations.length ? [{ title: "Recommended for You", items: recommendations }] : []),
-      { title: "Top Rated", items: [...topRated, ...topRatedTv].slice(0, 10) },
-      { title: "New Releases", items: nowPlaying },
+      { title: "Trending", items: genre1 },
+      { title: "Popular", items: genre2 },
+      { title: "Uncensored", items: genre3 },
+      { title: "Big Tits", items: genre4 },
+      { title: "Cosplay", items: genre5 },
+      { title: "Cheating Wife", items: genre6 },
+      { title: "Mature", items: genre7 },
+      { title: "Older Sister", items: genre8 },
+      { title: "Soapland", items: genre9 },
+      { title: "School Girls", items: genre10 },
     ],
   };
 }
 
 async function loadMovies() {
   const [
-    trending,
-    popular,
-    topRated,
-    action,
-    comedy,
-    romance,
-    horror,
-    animation,
-    documentary,
+    genre1,
+    genre2,
+    genre3,
+    genre4,
+    genre5,
+    genre6,
+    genre7,
+    genre8,
+    genre9,
+    genre10
   ] = await Promise.all([
-    fetchTrending(),
-    fetchPopular(),
-    fetchTopRated(),
-    discoverByGenre({ data: { genreId: "28" } }),
-    discoverByGenre({ data: { genreId: "35" } }),
-    discoverByGenre({ data: { genreId: "10749" } }),
-    discoverByGenre({ data: { genreId: "27" } }),
-    discoverByGenre({ data: { genreId: "16" } }),
-    discoverByGenre({ data: { genreId: "99" } }),
+    discoverByGenre({ data: { genreId: "film-jepang-trending" } }),
+    discoverByGenre({ data: { genreId: "jav-populer" } }),
+    discoverByGenre({ data: { genreId: "film-jepang-tidak-sensor" } }),
+    discoverByGenre({ data: { genreId: "big-tits" } }),    
+    discoverByGenre({ data: { genreId: "cosplay" } }),
+    discoverByGenre({ data: { genreId: "cheating-wife" } }),  
+    discoverByGenre({ data: { genreId: "mature"} }),
+    discoverByGenre({ data: { genreId: "older-sister" } }),
+    discoverByGenre({ data: { genreId: "soapland" } }),
+    discoverByGenre({ data: { genreId: "school-girls" } }),
   ]);
   return {
-    heroSlides: await enrichCertificationsFn({ data: { items: popular.slice(0, 3) } }),
+    heroSlides: await enrichCertificationsFn({ data: { items: genre1.slice(0, 3) } }),
     top10Today: [],
     genreGroups: [],
     rows: [
-      { title: "Trending Movies", items: trending },
-      { title: "Popular Movies", items: popular },
-      { title: "Critically Acclaimed", items: topRated },
-      { title: "Action & Adventure", items: action },
-      { title: "Laugh Out Loud", items: comedy },
-      { title: "Romance", items: romance },
-      { title: "Animation & Family", items: animation },
-      { title: "Horror", items: horror },
-      { title: "Documentaries", items: documentary },
+      { title: "Trending", items: genre1 },
+      { title: "Popular", items: genre2 },
+      { title: "Uncensored", items: genre3 },
+      { title: "Big Tits", items: genre4 },
+      { title: "Cosplay", items: genre5 },
+      { title: "Cheating Wife", items: genre6 },
+      { title: "Mature", items: genre7 },
+      { title: "Older Sister", items: genre8 },
+      { title: "Soapland", items: genre9 },
+      { title: "School Girls", items: genre10 },
     ],
   };
 }
@@ -236,21 +220,11 @@ export async function loadBrowseData(kind: BrowseKind = "home") {
 }
 
 export async function movieById(id: string | number): Promise<any> {
+  const cleanId = String(id).trim();
   try {
-    const { getMovieById, toMovie } = await import("./api/wp.server");
-    
-    const cleanId = String(id).trim();
-
-    const rawMatched = await getMovieById(cleanId);  
-
-    if (!rawMatched || !rawMatched.id) {
-      return null;
-    }
-    
-    return toMovie(rawMatched);;
-  } catch (err) {
-    console.error("Error transforming movie:", err);
-    return null;
+    return await fetchMovie({ data: { id: cleanId } });
+  } catch {
+    return [];
   }
 }
 

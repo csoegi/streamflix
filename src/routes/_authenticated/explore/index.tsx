@@ -1,50 +1,16 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { ChevronLeft, ChevronRight, Compass, Sparkles } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Compass, Sparkles, Search, ChevronDown } from "lucide-react";
 import { Navbar } from "@/components/streamflix/Navbar";
 import { Footer } from "@/components/streamflix/Footer";
-import { MovieCard } from "@/components/streamflix/MovieCard";
 import { Skeleton } from "@/components/ui/skeleton";
-import { fetchPopular } from "@/lib/api/tmdb";
-import type { Movie } from "@/lib/types";
-import { getServerConfig } from "@/lib/config.server";
-
-// Unified definition model tracking your custom backend taxonomy schemas
-interface WPGenreTerm {
-  term_id: number;
-  name: string;
-  slug: string;
-  count: number;
-}
+import { fetchGenres } from "@/lib/api/tmdb";
+import type { WPTerm } from "@/lib/types";
 
 export const Route = createFileRoute("/_authenticated/explore/")({
   loader: async () => {
-    const { FILMJEPANG_API_BASE_URL, FILMJEPANG_API_KEY } = getServerConfig();
-    
-    let genresPayload: WPGenreTerm[] = [];
-    
-    try {
-      const res = await fetch(`${FILMJEPANG_API_BASE_URL}/genres`, {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${FILMJEPANG_API_KEY}`,
-          "Content-Type": "application/json"
-        }
-      });
-      if (res.ok) {
-        genresPayload = await res.json();
-      }
-    } catch (err) {
-      console.error("Explore index loader taxonomy fetch failure:", err);
-    }
-
-    // 2. Fetch popular movies (this hits your getMovies routing proxy layout automatically)
-    const popular = await fetchPopular();
-    
-    return { 
-      genres: genresPayload, 
-      items: popular?.results || [] 
-    };
+    const [genres] = await Promise.all([fetchGenres()]);
+    return { genres: genres };
   },
   head: () => ({ meta: [{ title: "Explore — StreamFlix" }] }),
   pendingComponent: () => (
@@ -59,18 +25,14 @@ export const Route = createFileRoute("/_authenticated/explore/")({
         </div>
       </section>
       <main className="mx-auto max-w-[1800px] px-4 pb-16 sm:px-8">
-        <div className="mt-8 flex flex-wrap gap-2">
-          {Array.from({ length: 12 }).map((_, i) => (
-            <Skeleton key={i} className="h-9 w-24 rounded-full" />
-          ))}
+        <div className="mt-8 flex justify-between gap-4">
+          <Skeleton className="h-10 w-64 rounded-lg" />
+          <Skeleton className="h-10 w-44 rounded-lg" />
         </div>
-        <div className="mt-10">
-          <Skeleton className="h-5 w-44 rounded" />
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7">
-            {Array.from({ length: 12 }).map((_, i) => (
-              <Skeleton key={i} className="w-full aspect-[2/3] rounded-xl" />
-            ))}
-          </div>
+        <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+          {Array.from({ length: 16 }).map((_, i) => (
+            <Skeleton key={i} className="h-14 w-full rounded-xl" />
+          ))}
         </div>
       </main>
     </div>
@@ -78,108 +40,119 @@ export const Route = createFileRoute("/_authenticated/explore/")({
   component: ExplorePage,
 });
 
-function ExplorePage() {
-  const { genres, items } = Route.useLoaderData();
-  const [page, setPage] = useState(1);
-  const navigate = useNavigate();
+type SortOption = "videos" | "alpha";
 
-  const safeGenres = genres || [];
-  const safeItems: Movie[] = items || [];
-  const pageCount = Math.max(1, Math.ceil(safeItems.length / 24));
-  const visible = safeItems.slice((page - 1) * 24, page * 24);
+function ExplorePage() {
+  const { genres } = Route.useLoaderData();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<SortOption>("videos");
+
+  // Local processing pipeline (Search filtering + Sorting actions)
+  const processedGenres = useMemo(() => {
+    let list = [...genres];
+
+    // 1. Handle String Filtering
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      list = list.filter((g: any) => g.name.toLowerCase().includes(q));
+    }
+
+    // 2. Handle List Sorting Rules
+    if (sortBy === "videos") {
+      list.sort((a: any, b: any) => (b.count || 0) - (a.count || 0));
+    } else if (sortBy === "alpha") {
+      list.sort((a: any, b: any) => a.name.localeCompare(b.name));
+    }
+
+    return list;
+  }, [genres, searchQuery, sortBy]);
 
   return (
-    <div className="min-h-dvh bg-background">
+    <div className="min-h-dvh bg-background text-foreground">
       <Navbar />
-
-      <section className="relative flex h-[38vh] items-end overflow-hidden sm:h-[46vh]">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-700/50 via-surface to-background" />
+      {/* Cinematic Banner */}
+      <section className="relative flex h-[36vh] items-end overflow-hidden sm:h-[36vh] bg-zinc-950/40 border-b border-border">
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/50 via-surface to-background" />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
-        <div className="relative z-10 w-full px-4 pb-8 sm:px-8 md:px-16">
+        <div className="relative z-10 w-full px-4 pb-6 sm:px-8 md:px-16">
           <div className="flex items-center gap-2 text-purple-300">
             <Compass className="size-5" />
             <span className="text-sm font-semibold uppercase tracking-widest">Explore</span>
           </div>
           <h1 className="mt-1 text-4xl font-black tracking-tight sm:text-6xl text-white">Pick a mood</h1>
           <p className="mt-2 max-w-xl text-sm text-foreground/80 sm:text-base">
-            Jump into a curated mood or genre and discover something new.
+            {processedGenres.length} genres.
           </p>
         </div>
       </section>
+      <main className="mx-auto max-w-[1800px] px-4 pb-16 sm:px-8">        
+        {/* Controls Layout Layer */}
+        <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-zinc-800 pb-6">
+  
+          {/* Functional Search Bar Wrapper Input */}
+          <div className="relative w-full max-w-md">
+            <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search genres..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full h-11 bg-zinc-900/60 border border-zinc-800 rounded-lg pl-10 pr-4 text-sm font-medium placeholder-zinc-500 text-zinc-100 transition focus:outline-none focus:border-zinc-700 focus:bg-zinc-900"
+            />
+          </div>
 
-      <main className="mx-auto max-w-[1800px] px-4 pb-16 sm:px-8">
-        
-        {/* Dynamic Genre Filter Badges Grid Array Container */}
-        <div className="mt-8 flex flex-wrap gap-2">
-          {safeGenres.map((g: any) => {
-            // Target the clean backend text slug property natively (e.g. "action", "beautiful-girl")
-            const targetGenreSlug = g.slug || g.name.toLowerCase().trim().replace(/\s+/g, '-');
+          {/* 💡 Filtering Dropdown Select Container */}
+          <div className="flex items-center gap-2 self-start sm:self-auto">
             
-            return (
-              <Link
-                key={g.term_id || g.id}
-                to="/explore/$genreId"
-                params={{ genreId: targetGenreSlug }} // FIX: Passes text slugs parameter to match dynamic router updates
-                search={{ q: g.name }}               // Keeps target link title query tracking full string populated
-                className="flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground transition hover:border-primary hover:text-foreground hover:bg-white/5 shadow-sm"
+            <div className="relative">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as SortOption)}
+                className="appearance-none h-11 bg-zinc-900/60 border border-zinc-800 rounded-lg pl-4 pr-10 text-sm font-semibold text-zinc-200 cursor-pointer focus:outline-none focus:bg-zinc-900 border-zinc-700 transition"
               >
-                <Sparkles className="size-3.5 text-primary" /> {g.name}
-                {g.count !== undefined && (
-                  <span className="text-[10px] bg-zinc-800 text-zinc-500 rounded px-1.5 py-0.5 ml-0.5 font-medium">
-                    {g.count}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
+                <option value="videos">Most videos</option>
+                <option value="alpha">Alphabetically</option>
+              </select>
+              <ChevronDown className="absolute right-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+            </div>
+          </div>
         </div>
 
-        {safeItems.length > 0 && (
-          <div className="mt-10">
-            <h2 className="text-lg font-semibold tracking-tight text-white mb-4">Popular right now</h2>
-            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7">
-              {visible.map((m) => (
-                <button
-                  key={m.id}
-                  onClick={() => navigate({ to: "/movie/$id", params: { id: m.id } })}
-                  className="w-full text-left transition transform hover:scale-[1.02] duration-200"
+        {/* 2-Column Mobile / 4-Column Desktop Display Grid Layout */}
+        {processedGenres.length > 0 ? (
+          <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+            {processedGenres.map((g: any) => {
+              const genreSlug = g.slug || g.name.toLowerCase().trim().replace(/\s+/g, '-');
+              
+              return (
+                <Link
+                  key={g.term_id || g.id}
+                  to="/explore/$genreId"
+                  params={{ genreId: genreSlug }} 
+                  className="flex items-center justify-between h-14 bg-zinc-900/30 border border-zinc-800/80 rounded-xl px-4 py-3 text-sm font-semibold text-zinc-200 transition hover:border-pink-500 hover:bg-zinc-800/40 group shadow-sm"
                 >
-                  <MovieCard movie={m} fluid />
-                </button>
-              ))}
-            </div>
-            
-            {pageCount > 1 && (
-              <div className="mt-8 flex items-center justify-center gap-2">
-                <button
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  className="inline-flex items-center gap-1 rounded-md border border-border px-3 py-2 text-sm text-muted-foreground hover:text-foreground disabled:opacity-40"
-                >
-                  <ChevronLeft className="size-4" /> Previous
-                </button>
-                {Array.from({ length: pageCount }, (_, i) => i + 1).map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => setPage(p)}
-                    className={`rounded-md px-3 py-2 text-sm font-medium ${
-                      p === page
-                        ? "bg-white text-black font-semibold shadow-md"
-                        : "border border-border text-muted-foreground hover:text-foreground hover:bg-white/5"
-                    }`}
-                  >
-                    {p}
-                  </button>
-                ))}
-                <button
-                  onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
-                  disabled={page === pageCount}
-                  className="inline-flex items-center gap-1 rounded-md border border-border px-3 py-2 text-sm text-muted-foreground hover:text-foreground disabled:opacity-40"
-                >
-                  Next <ChevronRight className="size-4" />
-                </button>
-              </div>
-            )}
+                  <span className="truncate group-hover:text-white transition duration-150">
+                    {g.name}
+                  </span>
+                  {g.count !== undefined && (
+                    <span className="text-xs text-zinc-500 font-mono tracking-tight bg-zinc-900/80 px-2 py-0.5 rounded border border-zinc-800/60 hover:text-pink-500">
+                      {Number(g.count).toLocaleString()}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+        ) : (
+          /* Missing State fallbacks block */
+          <div className="mt-16 text-center py-12 border border-dashed border-zinc-800 rounded-2xl bg-zinc-900/10">
+            <p className="text-zinc-400 font-medium">No genres found matching "{searchQuery}"</p>
+            <button 
+              onClick={() => setSearchQuery("")}
+              className="mt-3 text-xs text-primary font-semibold hover:underline"
+            >
+              Clear search input query
+            </button>
           </div>
         )}
       </main>

@@ -34,7 +34,7 @@ export const Route = createFileRoute("/")({
     }
   },
   loader: async () => {
-    const data = await getMovies("/trending/movie/week");
+    const data = await getMovies({ page: "1", per_page: "10" });
     return (data.results || []).slice(0, 10).map(toMovie);
   },
   head: () => ({
