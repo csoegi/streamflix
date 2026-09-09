@@ -22,7 +22,7 @@ import {
   discoverByGenre,
   discoverByGenreMixed,
   searchPeople,
-  fetchGenres,
+  fetchMovieGenres,
   searchFiltered as searchFilteredFn,
   suggestTitles as suggestTitlesFn,
   type SearchFilterInput,
@@ -155,13 +155,15 @@ async function loadTv() {
 }
 
 async function loadNew() {
-  const [nowPlaying, upcoming, upcomingTv, trending, airing, newMovies, popularUpcoming, popularTv] =
-    await Promise.all([
+  const [
+    nowPlaying,  
+    trending, 
+    newMovies, 
+    popularUpcoming, 
+    popularTv
+  ] = await Promise.all([
       fetchNowPlaying(),
-      fetchUpcoming(),
-      fetchUpcomingTv(),
       fetchTrendingAllWeek(),
-      fetchAiringTv(),
       fetchNewMovies(),
       fetchPopularUpcoming(),
       fetchPopularUpcomingTv(),
@@ -288,7 +290,7 @@ export async function searchByPerson(query: string) {
 
 export async function getGenres() {
   try {
-    return await fetchGenres();
+    return await fetchMovieGenres();
   } catch {
     return [];
   }

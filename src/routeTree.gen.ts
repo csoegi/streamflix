@@ -10,11 +10,20 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TosRouteImport } from './routes/tos'
+import { Route as SearchRouteImport } from './routes/search'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as OfflineRouteImport } from './routes/offline'
+import { Route as MoviesRouteImport } from './routes/movies'
+import { Route as HomeRouteImport } from './routes/home'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as WatchIdRouteImport } from './routes/watch.$id'
+import { Route as MoviesIdRouteImport } from './routes/movies.$id'
+import { Route as CollectionsStudiosRouteImport } from './routes/collections/studios'
+import { Route as CollectionsSeriesRouteImport } from './routes/collections/series'
+import { Route as CollectionsGenresRouteImport } from './routes/collections/genres'
+import { Route as CollectionsActressesRouteImport } from './routes/collections/actresses'
 import { Route as AuthActionRouteImport } from './routes/auth/action'
 import { Route as ApiVerifyRecaptchaRouteImport } from './routes/api/verify-recaptcha'
 import { Route as ApiSendNotificationRouteImport } from './routes/api/send-notification'
@@ -24,7 +33,6 @@ import { Route as ApiClientIpRouteImport } from './routes/api/client-ip'
 import { Route as ApiArchiveRouteImport } from './routes/api/archive'
 import { Route as AuthenticatedStatsRouteImport } from './routes/_authenticated/stats'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
-import { Route as AuthenticatedSearchRouteImport } from './routes/_authenticated/search'
 import { Route as AuthenticatedProfilesRouteImport } from './routes/_authenticated/profiles'
 import { Route as AuthenticatedMylistRouteImport } from './routes/_authenticated/mylist'
 import { Route as AuthenticatedHistoryRouteImport } from './routes/_authenticated/history'
@@ -32,15 +40,20 @@ import { Route as AuthenticatedForcePasswordRouteImport } from './routes/_authen
 import { Route as AuthenticatedExploreRouteImport } from './routes/_authenticated/explore'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
 import { Route as AuthenticatedBrowseRouteImport } from './routes/_authenticated/browse'
-import { Route as AuthenticatedExploreIndexRouteImport } from './routes/_authenticated/explore/index'
-import { Route as AuthenticatedWatchIdRouteImport } from './routes/_authenticated/watch.$id'
+import { Route as CollectionsStudiosStudioSlugRouteImport } from './routes/collections/studios.$studioSlug'
+import { Route as CollectionsSeriesCodeSlugRouteImport } from './routes/collections/series.$codeSlug'
+import { Route as CollectionsGenresGenreSlugRouteImport } from './routes/collections/genres.$genreSlug'
+import { Route as CollectionsActressesActorSlugRouteImport } from './routes/collections/actresses.$actorSlug'
 import { Route as AuthenticatedPersonIdRouteImport } from './routes/_authenticated/person.$id'
-import { Route as AuthenticatedMovieIdRouteImport } from './routes/_authenticated/movie.$id'
-import { Route as AuthenticatedExploreGenreIdRouteImport } from './routes/_authenticated/explore/$genreId'
 
 const TosRoute = TosRouteImport.update({
   id: '/tos',
   path: '/tos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SearchRoute = SearchRouteImport.update({
+  id: '/search',
+  path: '/search',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyPolicyRoute = PrivacyPolicyRouteImport.update({
@@ -51,6 +64,16 @@ const PrivacyPolicyRoute = PrivacyPolicyRouteImport.update({
 const OfflineRoute = OfflineRouteImport.update({
   id: '/offline',
   path: '/offline',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MoviesRoute = MoviesRouteImport.update({
+  id: '/movies',
+  path: '/movies',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HomeRoute = HomeRouteImport.update({
+  id: '/home',
+  path: '/home',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -65,6 +88,36 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WatchIdRoute = WatchIdRouteImport.update({
+  id: '/watch/$id',
+  path: '/watch/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MoviesIdRoute = MoviesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => MoviesRoute,
+} as any)
+const CollectionsStudiosRoute = CollectionsStudiosRouteImport.update({
+  id: '/collections/studios',
+  path: '/collections/studios',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CollectionsSeriesRoute = CollectionsSeriesRouteImport.update({
+  id: '/collections/series',
+  path: '/collections/series',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CollectionsGenresRoute = CollectionsGenresRouteImport.update({
+  id: '/collections/genres',
+  path: '/collections/genres',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CollectionsActressesRoute = CollectionsActressesRouteImport.update({
+  id: '/collections/actresses',
+  path: '/collections/actresses',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthActionRoute = AuthActionRouteImport.update({
@@ -113,11 +166,6 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedSearchRoute = AuthenticatedSearchRouteImport.update({
-  id: '/search',
-  path: '/search',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedProfilesRoute = AuthenticatedProfilesRouteImport.update({
   id: '/profiles',
   path: '/profiles',
@@ -154,48 +202,52 @@ const AuthenticatedBrowseRoute = AuthenticatedBrowseRouteImport.update({
   path: '/browse',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedExploreIndexRoute =
-  AuthenticatedExploreIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => AuthenticatedExploreRoute,
+const CollectionsStudiosStudioSlugRoute =
+  CollectionsStudiosStudioSlugRouteImport.update({
+    id: '/$studioSlug',
+    path: '/$studioSlug',
+    getParentRoute: () => CollectionsStudiosRoute,
   } as any)
-const AuthenticatedWatchIdRoute = AuthenticatedWatchIdRouteImport.update({
-  id: '/watch/$id',
-  path: '/watch/$id',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
+const CollectionsSeriesCodeSlugRoute =
+  CollectionsSeriesCodeSlugRouteImport.update({
+    id: '/$codeSlug',
+    path: '/$codeSlug',
+    getParentRoute: () => CollectionsSeriesRoute,
+  } as any)
+const CollectionsGenresGenreSlugRoute =
+  CollectionsGenresGenreSlugRouteImport.update({
+    id: '/$genreSlug',
+    path: '/$genreSlug',
+    getParentRoute: () => CollectionsGenresRoute,
+  } as any)
+const CollectionsActressesActorSlugRoute =
+  CollectionsActressesActorSlugRouteImport.update({
+    id: '/$actorSlug',
+    path: '/$actorSlug',
+    getParentRoute: () => CollectionsActressesRoute,
+  } as any)
 const AuthenticatedPersonIdRoute = AuthenticatedPersonIdRouteImport.update({
   id: '/person/$id',
   path: '/person/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedMovieIdRoute = AuthenticatedMovieIdRouteImport.update({
-  id: '/movie/$id',
-  path: '/movie/$id',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedExploreGenreIdRoute =
-  AuthenticatedExploreGenreIdRouteImport.update({
-    id: '/$genreId',
-    path: '/$genreId',
-    getParentRoute: () => AuthenticatedExploreRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
+  '/home': typeof HomeRoute
+  '/movies': typeof MoviesRouteWithChildren
   '/offline': typeof OfflineRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
+  '/search': typeof SearchRoute
   '/tos': typeof TosRoute
   '/browse': typeof AuthenticatedBrowseRoute
   '/calendar': typeof AuthenticatedCalendarRoute
-  '/explore': typeof AuthenticatedExploreRouteWithChildren
+  '/explore': typeof AuthenticatedExploreRoute
   '/force-password': typeof AuthenticatedForcePasswordRoute
   '/history': typeof AuthenticatedHistoryRoute
   '/mylist': typeof AuthenticatedMylistRoute
   '/profiles': typeof AuthenticatedProfilesRoute
-  '/search': typeof AuthenticatedSearchRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/stats': typeof AuthenticatedStatsRoute
   '/api/archive': typeof ApiArchiveRoute
@@ -205,25 +257,34 @@ export interface FileRoutesByFullPath {
   '/api/send-notification': typeof ApiSendNotificationRoute
   '/api/verify-recaptcha': typeof ApiVerifyRecaptchaRoute
   '/auth/action': typeof AuthActionRoute
-  '/explore/$genreId': typeof AuthenticatedExploreGenreIdRoute
-  '/movie/$id': typeof AuthenticatedMovieIdRoute
+  '/collections/actresses': typeof CollectionsActressesRouteWithChildren
+  '/collections/genres': typeof CollectionsGenresRouteWithChildren
+  '/collections/series': typeof CollectionsSeriesRouteWithChildren
+  '/collections/studios': typeof CollectionsStudiosRouteWithChildren
+  '/movies/$id': typeof MoviesIdRoute
+  '/watch/$id': typeof WatchIdRoute
   '/person/$id': typeof AuthenticatedPersonIdRoute
-  '/watch/$id': typeof AuthenticatedWatchIdRoute
-  '/explore/': typeof AuthenticatedExploreIndexRoute
+  '/collections/actresses/$actorSlug': typeof CollectionsActressesActorSlugRoute
+  '/collections/genres/$genreSlug': typeof CollectionsGenresGenreSlugRoute
+  '/collections/series/$codeSlug': typeof CollectionsSeriesCodeSlugRoute
+  '/collections/studios/$studioSlug': typeof CollectionsStudiosStudioSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
+  '/home': typeof HomeRoute
+  '/movies': typeof MoviesRouteWithChildren
   '/offline': typeof OfflineRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
+  '/search': typeof SearchRoute
   '/tos': typeof TosRoute
   '/browse': typeof AuthenticatedBrowseRoute
   '/calendar': typeof AuthenticatedCalendarRoute
+  '/explore': typeof AuthenticatedExploreRoute
   '/force-password': typeof AuthenticatedForcePasswordRoute
   '/history': typeof AuthenticatedHistoryRoute
   '/mylist': typeof AuthenticatedMylistRoute
   '/profiles': typeof AuthenticatedProfilesRoute
-  '/search': typeof AuthenticatedSearchRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/stats': typeof AuthenticatedStatsRoute
   '/api/archive': typeof ApiArchiveRoute
@@ -233,28 +294,36 @@ export interface FileRoutesByTo {
   '/api/send-notification': typeof ApiSendNotificationRoute
   '/api/verify-recaptcha': typeof ApiVerifyRecaptchaRoute
   '/auth/action': typeof AuthActionRoute
-  '/explore/$genreId': typeof AuthenticatedExploreGenreIdRoute
-  '/movie/$id': typeof AuthenticatedMovieIdRoute
+  '/collections/actresses': typeof CollectionsActressesRouteWithChildren
+  '/collections/genres': typeof CollectionsGenresRouteWithChildren
+  '/collections/series': typeof CollectionsSeriesRouteWithChildren
+  '/collections/studios': typeof CollectionsStudiosRouteWithChildren
+  '/movies/$id': typeof MoviesIdRoute
+  '/watch/$id': typeof WatchIdRoute
   '/person/$id': typeof AuthenticatedPersonIdRoute
-  '/watch/$id': typeof AuthenticatedWatchIdRoute
-  '/explore': typeof AuthenticatedExploreIndexRoute
+  '/collections/actresses/$actorSlug': typeof CollectionsActressesActorSlugRoute
+  '/collections/genres/$genreSlug': typeof CollectionsGenresGenreSlugRoute
+  '/collections/series/$codeSlug': typeof CollectionsSeriesCodeSlugRoute
+  '/collections/studios/$studioSlug': typeof CollectionsStudiosStudioSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
+  '/home': typeof HomeRoute
+  '/movies': typeof MoviesRouteWithChildren
   '/offline': typeof OfflineRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
+  '/search': typeof SearchRoute
   '/tos': typeof TosRoute
   '/_authenticated/browse': typeof AuthenticatedBrowseRoute
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
-  '/_authenticated/explore': typeof AuthenticatedExploreRouteWithChildren
+  '/_authenticated/explore': typeof AuthenticatedExploreRoute
   '/_authenticated/force-password': typeof AuthenticatedForcePasswordRoute
   '/_authenticated/history': typeof AuthenticatedHistoryRoute
   '/_authenticated/mylist': typeof AuthenticatedMylistRoute
   '/_authenticated/profiles': typeof AuthenticatedProfilesRoute
-  '/_authenticated/search': typeof AuthenticatedSearchRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/stats': typeof AuthenticatedStatsRoute
   '/api/archive': typeof ApiArchiveRoute
@@ -264,19 +333,28 @@ export interface FileRoutesById {
   '/api/send-notification': typeof ApiSendNotificationRoute
   '/api/verify-recaptcha': typeof ApiVerifyRecaptchaRoute
   '/auth/action': typeof AuthActionRoute
-  '/_authenticated/explore/$genreId': typeof AuthenticatedExploreGenreIdRoute
-  '/_authenticated/movie/$id': typeof AuthenticatedMovieIdRoute
+  '/collections/actresses': typeof CollectionsActressesRouteWithChildren
+  '/collections/genres': typeof CollectionsGenresRouteWithChildren
+  '/collections/series': typeof CollectionsSeriesRouteWithChildren
+  '/collections/studios': typeof CollectionsStudiosRouteWithChildren
+  '/movies/$id': typeof MoviesIdRoute
+  '/watch/$id': typeof WatchIdRoute
   '/_authenticated/person/$id': typeof AuthenticatedPersonIdRoute
-  '/_authenticated/watch/$id': typeof AuthenticatedWatchIdRoute
-  '/_authenticated/explore/': typeof AuthenticatedExploreIndexRoute
+  '/collections/actresses/$actorSlug': typeof CollectionsActressesActorSlugRoute
+  '/collections/genres/$genreSlug': typeof CollectionsGenresGenreSlugRoute
+  '/collections/series/$codeSlug': typeof CollectionsSeriesCodeSlugRoute
+  '/collections/studios/$studioSlug': typeof CollectionsStudiosStudioSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/auth'
+    | '/home'
+    | '/movies'
     | '/offline'
     | '/privacy-policy'
+    | '/search'
     | '/tos'
     | '/browse'
     | '/calendar'
@@ -285,7 +363,6 @@ export interface FileRouteTypes {
     | '/history'
     | '/mylist'
     | '/profiles'
-    | '/search'
     | '/settings'
     | '/stats'
     | '/api/archive'
@@ -295,25 +372,34 @@ export interface FileRouteTypes {
     | '/api/send-notification'
     | '/api/verify-recaptcha'
     | '/auth/action'
-    | '/explore/$genreId'
-    | '/movie/$id'
-    | '/person/$id'
+    | '/collections/actresses'
+    | '/collections/genres'
+    | '/collections/series'
+    | '/collections/studios'
+    | '/movies/$id'
     | '/watch/$id'
-    | '/explore/'
+    | '/person/$id'
+    | '/collections/actresses/$actorSlug'
+    | '/collections/genres/$genreSlug'
+    | '/collections/series/$codeSlug'
+    | '/collections/studios/$studioSlug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
+    | '/home'
+    | '/movies'
     | '/offline'
     | '/privacy-policy'
+    | '/search'
     | '/tos'
     | '/browse'
     | '/calendar'
+    | '/explore'
     | '/force-password'
     | '/history'
     | '/mylist'
     | '/profiles'
-    | '/search'
     | '/settings'
     | '/stats'
     | '/api/archive'
@@ -323,18 +409,27 @@ export interface FileRouteTypes {
     | '/api/send-notification'
     | '/api/verify-recaptcha'
     | '/auth/action'
-    | '/explore/$genreId'
-    | '/movie/$id'
-    | '/person/$id'
+    | '/collections/actresses'
+    | '/collections/genres'
+    | '/collections/series'
+    | '/collections/studios'
+    | '/movies/$id'
     | '/watch/$id'
-    | '/explore'
+    | '/person/$id'
+    | '/collections/actresses/$actorSlug'
+    | '/collections/genres/$genreSlug'
+    | '/collections/series/$codeSlug'
+    | '/collections/studios/$studioSlug'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/home'
+    | '/movies'
     | '/offline'
     | '/privacy-policy'
+    | '/search'
     | '/tos'
     | '/_authenticated/browse'
     | '/_authenticated/calendar'
@@ -343,7 +438,6 @@ export interface FileRouteTypes {
     | '/_authenticated/history'
     | '/_authenticated/mylist'
     | '/_authenticated/profiles'
-    | '/_authenticated/search'
     | '/_authenticated/settings'
     | '/_authenticated/stats'
     | '/api/archive'
@@ -353,19 +447,28 @@ export interface FileRouteTypes {
     | '/api/send-notification'
     | '/api/verify-recaptcha'
     | '/auth/action'
-    | '/_authenticated/explore/$genreId'
-    | '/_authenticated/movie/$id'
+    | '/collections/actresses'
+    | '/collections/genres'
+    | '/collections/series'
+    | '/collections/studios'
+    | '/movies/$id'
+    | '/watch/$id'
     | '/_authenticated/person/$id'
-    | '/_authenticated/watch/$id'
-    | '/_authenticated/explore/'
+    | '/collections/actresses/$actorSlug'
+    | '/collections/genres/$genreSlug'
+    | '/collections/series/$codeSlug'
+    | '/collections/studios/$studioSlug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
+  HomeRoute: typeof HomeRoute
+  MoviesRoute: typeof MoviesRouteWithChildren
   OfflineRoute: typeof OfflineRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
+  SearchRoute: typeof SearchRoute
   TosRoute: typeof TosRoute
   ApiArchiveRoute: typeof ApiArchiveRoute
   ApiClientIpRoute: typeof ApiClientIpRoute
@@ -373,6 +476,11 @@ export interface RootRouteChildren {
   ApiReleaseNotificationsCronRoute: typeof ApiReleaseNotificationsCronRoute
   ApiSendNotificationRoute: typeof ApiSendNotificationRoute
   ApiVerifyRecaptchaRoute: typeof ApiVerifyRecaptchaRoute
+  CollectionsActressesRoute: typeof CollectionsActressesRouteWithChildren
+  CollectionsGenresRoute: typeof CollectionsGenresRouteWithChildren
+  CollectionsSeriesRoute: typeof CollectionsSeriesRouteWithChildren
+  CollectionsStudiosRoute: typeof CollectionsStudiosRouteWithChildren
+  WatchIdRoute: typeof WatchIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -382,6 +490,13 @@ declare module '@tanstack/react-router' {
       path: '/tos'
       fullPath: '/tos'
       preLoaderRoute: typeof TosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/search': {
+      id: '/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof SearchRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy-policy': {
@@ -396,6 +511,20 @@ declare module '@tanstack/react-router' {
       path: '/offline'
       fullPath: '/offline'
       preLoaderRoute: typeof OfflineRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/movies': {
+      id: '/movies'
+      path: '/movies'
+      fullPath: '/movies'
+      preLoaderRoute: typeof MoviesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/home': {
+      id: '/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof HomeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -417,6 +546,48 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/watch/$id': {
+      id: '/watch/$id'
+      path: '/watch/$id'
+      fullPath: '/watch/$id'
+      preLoaderRoute: typeof WatchIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/movies/$id': {
+      id: '/movies/$id'
+      path: '/$id'
+      fullPath: '/movies/$id'
+      preLoaderRoute: typeof MoviesIdRouteImport
+      parentRoute: typeof MoviesRoute
+    }
+    '/collections/studios': {
+      id: '/collections/studios'
+      path: '/collections/studios'
+      fullPath: '/collections/studios'
+      preLoaderRoute: typeof CollectionsStudiosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/collections/series': {
+      id: '/collections/series'
+      path: '/collections/series'
+      fullPath: '/collections/series'
+      preLoaderRoute: typeof CollectionsSeriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/collections/genres': {
+      id: '/collections/genres'
+      path: '/collections/genres'
+      fullPath: '/collections/genres'
+      preLoaderRoute: typeof CollectionsGenresRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/collections/actresses': {
+      id: '/collections/actresses'
+      path: '/collections/actresses'
+      fullPath: '/collections/actresses'
+      preLoaderRoute: typeof CollectionsActressesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/action': {
@@ -482,13 +653,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/search': {
-      id: '/_authenticated/search'
-      path: '/search'
-      fullPath: '/search'
-      preLoaderRoute: typeof AuthenticatedSearchRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/profiles': {
       id: '/_authenticated/profiles'
       path: '/profiles'
@@ -538,19 +702,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBrowseRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/explore/': {
-      id: '/_authenticated/explore/'
-      path: '/'
-      fullPath: '/explore/'
-      preLoaderRoute: typeof AuthenticatedExploreIndexRouteImport
-      parentRoute: typeof AuthenticatedExploreRoute
+    '/collections/studios/$studioSlug': {
+      id: '/collections/studios/$studioSlug'
+      path: '/$studioSlug'
+      fullPath: '/collections/studios/$studioSlug'
+      preLoaderRoute: typeof CollectionsStudiosStudioSlugRouteImport
+      parentRoute: typeof CollectionsStudiosRoute
     }
-    '/_authenticated/watch/$id': {
-      id: '/_authenticated/watch/$id'
-      path: '/watch/$id'
-      fullPath: '/watch/$id'
-      preLoaderRoute: typeof AuthenticatedWatchIdRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/collections/series/$codeSlug': {
+      id: '/collections/series/$codeSlug'
+      path: '/$codeSlug'
+      fullPath: '/collections/series/$codeSlug'
+      preLoaderRoute: typeof CollectionsSeriesCodeSlugRouteImport
+      parentRoute: typeof CollectionsSeriesRoute
+    }
+    '/collections/genres/$genreSlug': {
+      id: '/collections/genres/$genreSlug'
+      path: '/$genreSlug'
+      fullPath: '/collections/genres/$genreSlug'
+      preLoaderRoute: typeof CollectionsGenresGenreSlugRouteImport
+      parentRoute: typeof CollectionsGenresRoute
+    }
+    '/collections/actresses/$actorSlug': {
+      id: '/collections/actresses/$actorSlug'
+      path: '/$actorSlug'
+      fullPath: '/collections/actresses/$actorSlug'
+      preLoaderRoute: typeof CollectionsActressesActorSlugRouteImport
+      parentRoute: typeof CollectionsActressesRoute
     }
     '/_authenticated/person/$id': {
       id: '/_authenticated/person/$id'
@@ -559,66 +737,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPersonIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/movie/$id': {
-      id: '/_authenticated/movie/$id'
-      path: '/movie/$id'
-      fullPath: '/movie/$id'
-      preLoaderRoute: typeof AuthenticatedMovieIdRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/explore/$genreId': {
-      id: '/_authenticated/explore/$genreId'
-      path: '/$genreId'
-      fullPath: '/explore/$genreId'
-      preLoaderRoute: typeof AuthenticatedExploreGenreIdRouteImport
-      parentRoute: typeof AuthenticatedExploreRoute
-    }
   }
 }
-
-interface AuthenticatedExploreRouteChildren {
-  AuthenticatedExploreGenreIdRoute: typeof AuthenticatedExploreGenreIdRoute
-  AuthenticatedExploreIndexRoute: typeof AuthenticatedExploreIndexRoute
-}
-
-const AuthenticatedExploreRouteChildren: AuthenticatedExploreRouteChildren = {
-  AuthenticatedExploreGenreIdRoute: AuthenticatedExploreGenreIdRoute,
-  AuthenticatedExploreIndexRoute: AuthenticatedExploreIndexRoute,
-}
-
-const AuthenticatedExploreRouteWithChildren =
-  AuthenticatedExploreRoute._addFileChildren(AuthenticatedExploreRouteChildren)
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedBrowseRoute: typeof AuthenticatedBrowseRoute
   AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
-  AuthenticatedExploreRoute: typeof AuthenticatedExploreRouteWithChildren
+  AuthenticatedExploreRoute: typeof AuthenticatedExploreRoute
   AuthenticatedForcePasswordRoute: typeof AuthenticatedForcePasswordRoute
   AuthenticatedHistoryRoute: typeof AuthenticatedHistoryRoute
   AuthenticatedMylistRoute: typeof AuthenticatedMylistRoute
   AuthenticatedProfilesRoute: typeof AuthenticatedProfilesRoute
-  AuthenticatedSearchRoute: typeof AuthenticatedSearchRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedStatsRoute: typeof AuthenticatedStatsRoute
-  AuthenticatedMovieIdRoute: typeof AuthenticatedMovieIdRoute
   AuthenticatedPersonIdRoute: typeof AuthenticatedPersonIdRoute
-  AuthenticatedWatchIdRoute: typeof AuthenticatedWatchIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBrowseRoute: AuthenticatedBrowseRoute,
   AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
-  AuthenticatedExploreRoute: AuthenticatedExploreRouteWithChildren,
+  AuthenticatedExploreRoute: AuthenticatedExploreRoute,
   AuthenticatedForcePasswordRoute: AuthenticatedForcePasswordRoute,
   AuthenticatedHistoryRoute: AuthenticatedHistoryRoute,
   AuthenticatedMylistRoute: AuthenticatedMylistRoute,
   AuthenticatedProfilesRoute: AuthenticatedProfilesRoute,
-  AuthenticatedSearchRoute: AuthenticatedSearchRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedStatsRoute: AuthenticatedStatsRoute,
-  AuthenticatedMovieIdRoute: AuthenticatedMovieIdRoute,
   AuthenticatedPersonIdRoute: AuthenticatedPersonIdRoute,
-  AuthenticatedWatchIdRoute: AuthenticatedWatchIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -634,12 +779,70 @@ const AuthRouteChildren: AuthRouteChildren = {
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
+interface MoviesRouteChildren {
+  MoviesIdRoute: typeof MoviesIdRoute
+}
+
+const MoviesRouteChildren: MoviesRouteChildren = {
+  MoviesIdRoute: MoviesIdRoute,
+}
+
+const MoviesRouteWithChildren =
+  MoviesRoute._addFileChildren(MoviesRouteChildren)
+
+interface CollectionsActressesRouteChildren {
+  CollectionsActressesActorSlugRoute: typeof CollectionsActressesActorSlugRoute
+}
+
+const CollectionsActressesRouteChildren: CollectionsActressesRouteChildren = {
+  CollectionsActressesActorSlugRoute: CollectionsActressesActorSlugRoute,
+}
+
+const CollectionsActressesRouteWithChildren =
+  CollectionsActressesRoute._addFileChildren(CollectionsActressesRouteChildren)
+
+interface CollectionsGenresRouteChildren {
+  CollectionsGenresGenreSlugRoute: typeof CollectionsGenresGenreSlugRoute
+}
+
+const CollectionsGenresRouteChildren: CollectionsGenresRouteChildren = {
+  CollectionsGenresGenreSlugRoute: CollectionsGenresGenreSlugRoute,
+}
+
+const CollectionsGenresRouteWithChildren =
+  CollectionsGenresRoute._addFileChildren(CollectionsGenresRouteChildren)
+
+interface CollectionsSeriesRouteChildren {
+  CollectionsSeriesCodeSlugRoute: typeof CollectionsSeriesCodeSlugRoute
+}
+
+const CollectionsSeriesRouteChildren: CollectionsSeriesRouteChildren = {
+  CollectionsSeriesCodeSlugRoute: CollectionsSeriesCodeSlugRoute,
+}
+
+const CollectionsSeriesRouteWithChildren =
+  CollectionsSeriesRoute._addFileChildren(CollectionsSeriesRouteChildren)
+
+interface CollectionsStudiosRouteChildren {
+  CollectionsStudiosStudioSlugRoute: typeof CollectionsStudiosStudioSlugRoute
+}
+
+const CollectionsStudiosRouteChildren: CollectionsStudiosRouteChildren = {
+  CollectionsStudiosStudioSlugRoute: CollectionsStudiosStudioSlugRoute,
+}
+
+const CollectionsStudiosRouteWithChildren =
+  CollectionsStudiosRoute._addFileChildren(CollectionsStudiosRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
+  HomeRoute: HomeRoute,
+  MoviesRoute: MoviesRouteWithChildren,
   OfflineRoute: OfflineRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
+  SearchRoute: SearchRoute,
   TosRoute: TosRoute,
   ApiArchiveRoute: ApiArchiveRoute,
   ApiClientIpRoute: ApiClientIpRoute,
@@ -647,6 +850,11 @@ const rootRouteChildren: RootRouteChildren = {
   ApiReleaseNotificationsCronRoute: ApiReleaseNotificationsCronRoute,
   ApiSendNotificationRoute: ApiSendNotificationRoute,
   ApiVerifyRecaptchaRoute: ApiVerifyRecaptchaRoute,
+  CollectionsActressesRoute: CollectionsActressesRouteWithChildren,
+  CollectionsGenresRoute: CollectionsGenresRouteWithChildren,
+  CollectionsSeriesRoute: CollectionsSeriesRouteWithChildren,
+  CollectionsStudiosRoute: CollectionsStudiosRouteWithChildren,
+  WatchIdRoute: WatchIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

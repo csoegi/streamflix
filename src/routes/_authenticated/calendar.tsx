@@ -209,7 +209,7 @@ function CalendarPage() {
                     {dayItems.slice(0, 3).map((item) => (
                       <div key={item.id} className="group relative">
                         <Link
-                          to="/movie/$id"
+                          to="/movies/$id"
                           params={{ id: item.id }}
                           className="flex items-center gap-1.5 rounded-sm hover:bg-accent/60"
                           title={item.title}
@@ -275,7 +275,7 @@ function CalendarPage() {
                     <div className="text-xl font-bold text-foreground">{format(date, "d")}</div>
                   </div>
                   <Link
-                    to="/movie/$id"
+                    to="/movies/$id"
                     params={{ id: item.id }}
                     className="flex min-w-0 flex-1 items-center gap-3"
                   >

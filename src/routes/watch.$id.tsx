@@ -14,7 +14,7 @@ const watchSearchSchema = z.object({
   autoplay: z.boolean().optional(),
 });
 
-export const Route = createFileRoute("/_authenticated/watch/$id")({
+export const Route = createFileRoute("/watch/$id")({
   ssr: false,
   validateSearch: watchSearchSchema,
   loader: async ({ params }) => {

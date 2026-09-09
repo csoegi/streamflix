@@ -7,23 +7,23 @@ import { Footer } from "@/components/streamflix/Footer";
 import { MovieCard } from "@/components/streamflix/MovieCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Movie } from "@/lib/types";
-import { fetchGenres, fetchMoviesByGenre } from "@/lib/api/tmdb";
+import { fetchMovieStudios, fetchMoviesByGenre } from "@/lib/api/tmdb";
 
 const searchParamSchema = z.object({
   genreSlug: z.string().optional(),
   page: z.number().optional().default(1).catch(1),
 });
 
-export const Route = createFileRoute("/_authenticated/explore/$genreId")({
+export const Route = createFileRoute("/collections/studios/$studioSlug")({
   validateSearch: searchParamSchema,
   shouldReload: true,
   loader: async ({ params }) => {
-    const genreSlug = params.genreId;
+    const genreSlug = params.studioSlug;
     const searchParams = new URLSearchParams(location.search);
     const activePage = searchParams.get('page') ? parseInt(searchParams.get('page')!, 10) : 1;
 
     const [genres, movieList] = await Promise.all([
-      fetchGenres(),
+      fetchMovieStudios(),
       fetchMoviesByGenre({ data : { genreSlug : genreSlug } })
     ]);
     const top10Genres = genres.sort((a, b) => b.count - a.count).slice(0, 10);
@@ -87,7 +87,7 @@ function ExploreGenrePage() {
       <Navbar />
 
       {/* Cinematic Hero Header Viewport */}
-      <section className="relative flex h-[42vh] items-end overflow-hidden sm:h-[52vh] bg-zinc-950">
+      <section className="relative flex h-[30vh] items-end overflow-hidden sm:h-[30vh] bg-zinc-950">
         {hero?.backdrop ? (
           <img src={hero.backdrop} alt="" className="absolute inset-0 size-full object-cover opacity-40 blur-sm scale-105" />
         ) : (
@@ -117,12 +117,12 @@ function ExploreGenrePage() {
             return (
               <Link
                 key={g.term_id}
-                to="/explore/$genreId"
-                params={{ genreId: currentSlug }}
+                to="/collections/studios/$studioSlug"
+                params={{ studioSlug: currentSlug }}
                 className={`rounded-full border px-4 py-2 text-sm transition font-medium shadow-sm ${
                   active
-                    ? "border-white bg-white text-black font-semibold scale-105"
-                    : "border-border text-muted-foreground hover:border-pink-500 hover:text-foreground hover:bg-white/5"
+                    ? "border-primary bg-primary text-primary-foreground font-semibold scale-105 active"
+                    : "border-border text-muted-foreground hover:border-red-500 hover:text-foreground hover:bg-red/5"
                 }`}
               >
                 {g.name}
@@ -137,7 +137,7 @@ function ExploreGenrePage() {
               {visible.map((m: Movie) => (
                 <button
                   key={m.id}
-                  onClick={() => navigate({ to: "/movie/$id", params: { id: m.id } })}
+                  onClick={() => navigate({ to: "/movies/$id", params: { id: m.id } })}
                   className="w-full text-left transition transform hover:scale-[1.02] duration-200"
                 >
                   <MovieCard movie={m} fluid />

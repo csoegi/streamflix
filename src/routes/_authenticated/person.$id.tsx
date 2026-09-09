@@ -70,7 +70,7 @@ function CreditSection({
         {(expanded ? credits : credits.slice(0, 5)).map((item, idx) => (
           <Link
             key={`${item.id}-${item.character}`}
-            to="/movie/$id"
+            to="/movies/$id"
             params={{ id: item.id }}
             className={`group relative aspect-video overflow-hidden rounded-lg bg-surface hover:ring-1 hover:ring-primary transition ${
               !expanded && idx === 4 ? "hidden lg:block" : ""

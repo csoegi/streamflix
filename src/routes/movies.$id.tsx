@@ -100,7 +100,7 @@ function MovieSkeleton() {
   );
 }
 
-export const Route = createFileRoute("/_authenticated/movie/$id")({
+export const Route = createFileRoute("/movies/$id")({
   loader: async ({ params }) => {
     const extraGenres = ["jav", "film-jepang-trending", "film-bokep-tidak-sensor", "jav-populer"];
     const [movie, similar, recommendations, logo, ...genreResults] = await Promise.all([

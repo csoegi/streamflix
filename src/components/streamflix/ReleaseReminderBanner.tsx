@@ -55,7 +55,7 @@ export function ReleaseReminderBanner() {
             {due.map((d) => (
               <Link
                 key={d.movieId}
-                to="/movie/$id"
+                to="/movies/$id"
                 params={{ id: d.movieId }}
                 className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-border bg-surface py-1 pl-1 pr-3 text-xs hover:border-primary"
               >

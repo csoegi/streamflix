@@ -33,7 +33,7 @@ const links = [
   { kind: "home", label: "Home" },
   // { kind: "tv", label: "Shows" },
   { kind: "movies", label: "Movies" },
-  //{ kind: "new", label: "New & Popular" },
+  // { kind: "new", label: "New & Popular" },
 ] as const;
 
 export function Navbar() {
@@ -253,7 +253,7 @@ export function Navbar() {
       <div className="mx-auto flex h-16 items-center gap-6 px-4 sm:px-8">
         <Logo />
         <nav className="hidden md:flex items-center gap-5 text-sm text-muted-foreground">
-          {links.map((l, i) => {
+          {/* {links.map((l, i) => {
             const active = pathname === "/browse" && searchKind === l.kind;
             return (
               <Link
@@ -268,24 +268,60 @@ export function Navbar() {
                 {l.label}
               </Link>
             );
-          })}
-          <Link
-            to="/explore"
+          })} */}
+           <Link
+            to="/home"
             preload="intent"
             className={`hover:text-foreground transition-colors ${
-              pathname.startsWith("/explore") ? "text-foreground font-semibold" : ""
+              pathname.startsWith("/home") ? "text-foreground font-semibold" : ""
+            }`}
+          >
+            Home
+          </Link>
+          <Link
+            to="/movies"
+            preload="intent"
+            className={`hover:text-foreground transition-colors ${
+              pathname.startsWith("/movies") ? "text-foreground font-semibold" : ""
+            }`}
+          >
+            Movies
+          </Link>
+          <Link
+            to="/collections/genres"
+            preload="intent"
+            className={`hover:text-foreground transition-colors ${
+              pathname.startsWith("/collections/genres") ? "text-foreground font-semibold" : ""
             }`}
           >
             Genres
           </Link>
           <Link
-            to="/calendar"
+            to="/collections/series"
             preload="intent"
             className={`hover:text-foreground transition-colors ${
-              pathname === "/calendar" ? "text-foreground font-semibold" : ""
+              pathname.startsWith("/collections/series") ? "text-foreground font-semibold" : ""
             }`}
           >
-            Calendar
+            Series
+          </Link>
+          <Link
+            to="/collections/actresses"
+            preload="intent"
+            className={`hover:text-foreground transition-colors ${
+              pathname.startsWith("/collections/actresses") ? "text-foreground font-semibold" : ""
+            }`}
+          >
+            Actresses
+          </Link>
+          <Link
+            to="/collections/studios"
+            preload="intent"
+            className={`hover:text-foreground transition-colors ${
+              pathname.startsWith("/collections/studios") ? "text-foreground font-semibold" : ""
+            }`}
+          >
+            Studios
           </Link>
         </nav>
         <div className="ml-auto flex items-center gap-3">
@@ -331,7 +367,7 @@ export function Navbar() {
                             setSearchFocused(false);
                             setSearchQ("");
                             setSearchSuggestions([]);
-                            router.navigate({ to: "/movie/$id", params: { id: s.id } });
+                            router.navigate({ to: "/movies/$id", params: { id: s.id } });
                           }}
                           className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm hover:bg-accent"
                         >
@@ -456,7 +492,7 @@ export function Navbar() {
             Browse
           </p>
           <div className="space-y-1">
-            {links.map((l, i) => {
+            {/* {links.map((l, i) => {
               const active = pathname === "/browse" && searchKind === l.kind;
               const Icon = [Home, Tv, Film, Sparkles][i] ?? Film;
               return (
@@ -475,27 +511,87 @@ export function Navbar() {
                   <Icon className="size-4 text-muted-foreground" /> {l.label}
                 </Link>
               );
-            })}
+            })} */}
             <Link
-              to="/explore"
+              to="/home"
               preload="intent"
               onClick={() => setMobileNavOpen(false)}
               className={`flex items-center gap-3 rounded-md px-2 py-2.5 text-sm transition-colors ${
-                pathname.startsWith("/explore")
+                pathname.startsWith("/home")
+                  ? "bg-accent text-foreground font-semibold"
+                  : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+              }`}
+            >
+              <Compass className="size-4 text-muted-foreground" /> Home
+            </Link>
+            <Link
+              to="/movies"
+              preload="intent"
+              onClick={() => setMobileNavOpen(false)}
+              className={`flex items-center gap-3 rounded-md px-2 py-2.5 text-sm transition-colors ${
+                pathname.startsWith("/movies")
+                  ? "bg-accent text-foreground font-semibold"
+                  : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+              }`}
+            >
+              <Compass className="size-4 text-muted-foreground" /> Movies
+            </Link>
+            <Link
+              to="/collections/genres"
+              preload="intent"
+              onClick={() => setMobileNavOpen(false)}
+              className={`flex items-center gap-3 rounded-md px-2 py-2.5 text-sm transition-colors ${
+                pathname.startsWith("/genres")
                   ? "bg-accent text-foreground font-semibold"
                   : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
               }`}
             >
               <Compass className="size-4 text-muted-foreground" /> Genres
-            </Link>
+            </Link>            
             <Link
+              to="/collections/series"
+              preload="intent"
+              onClick={() => setMobileNavOpen(false)}
+              className={`flex items-center gap-3 rounded-md px-2 py-2.5 text-sm transition-colors ${
+                pathname.startsWith("/series")
+                  ? "bg-accent text-foreground font-semibold"
+                  : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+              }`}
+            >
+              <Compass className="size-4 text-muted-foreground" /> Series
+            </Link>
+             <Link
+              to="/collections/actresses"
+              preload="intent"
+              onClick={() => setMobileNavOpen(false)}
+              className={`flex items-center gap-3 rounded-md px-2 py-2.5 text-sm transition-colors ${
+                pathname.startsWith("/collections/actresses")
+                  ? "bg-accent text-foreground font-semibold"
+                  : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+              }`}
+            >
+              <Compass className="size-4 text-muted-foreground" /> Actresses
+            </Link>
+             <Link
+              to="/collections/studios"
+              preload="intent"
+              onClick={() => setMobileNavOpen(false)}
+              className={`flex items-center gap-3 rounded-md px-2 py-2.5 text-sm transition-colors ${
+                pathname.startsWith("/collections/studios")
+                  ? "bg-accent text-foreground font-semibold"
+                  : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+              }`}
+            >
+              <Compass className="size-4 text-muted-foreground" /> Studios
+            </Link>
+            {/* <Link
               to="/calendar"
               preload="intent"
               onClick={() => setMobileNavOpen(false)}
               className="flex items-center gap-3 rounded-md px-2 py-2.5 text-sm text-muted-foreground hover:bg-accent/60 hover:text-foreground transition-colors"
             >
               <CalendarDays className="size-4" /> Calendar
-            </Link>
+            </Link> */}
           </div>
         </div>
       )}

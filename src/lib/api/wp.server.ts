@@ -1,5 +1,6 @@
 import type { Movie, MovieList, WPTerm } from "@/lib/types";
 import { getServerConfig } from "@/lib/config.server";
+import { MOVIE_SORT_OPTIONS, GRID_SIZE_TERM_LIST } from "@/lib/constants";
 
 // Keep TMDB references intact for image layout lookups and asset fallback scripts
 const TMDB_BASE = "https://api.themoviedb.org/3";
@@ -134,13 +135,15 @@ export async function getMovieById(id: string): Promise<any> {
     return null;
 }
 
-export async function getGenres(): Promise<any[]> {
+export async function getTerms(taxonomy: string): Promise<any[]> {
     try {
-        const cacheKey = "meta_genres";
+         // FIX: Wrap the cacheKey in backticks so ${taxonomy} resolves dynamically
+        const cacheKey = `meta_terms_${taxonomy}`;
+        
         const cached = cacheGet<WPTerm[]>(cacheKey); 
         if (cached) return cached;
 
-        const res = await fetch(`${FILMJEPANG_API_BASE_URL}/genres`, {
+        const res = await fetch(`${FILMJEPANG_API_BASE_URL}/${taxonomy}`, {
             method: "GET",
             headers: {
             "Authorization": `Bearer ${FILMJEPANG_API_KEY}`,
@@ -150,7 +153,9 @@ export async function getGenres(): Promise<any[]> {
 
         if (!res.ok) throw new Error(`HTTP Code: ${res.status}`);
         var data = await res.json();
+        
         cacheSet(cacheKey, data);
+        
         return data;
     } 
     catch (err) {
@@ -159,15 +164,16 @@ export async function getGenres(): Promise<any[]> {
     return [];
 }
 
-export async function getMoviesByGenre(genreSlug: string, params: Record<string, string> = {}): Promise<any> {
+export async function getMoviesByTerm(taxonomy: string, term: string, params: Record<string, string> = {}): Promise<any> {
     try {
         const page = params.page ? parseInt(params.page) : 1;
-        const perPage = params.per_page ? parseInt(params.per_page) : 35;
-        const cacheKey = `genres_${genreSlug}_${page}_${perPage}`;
+        const perPage = params.per_page ? parseInt(params.per_page) : GRID_SIZE_TERM_LIST;
+        const sort = params.sort || MOVIE_SORT_OPTIONS.NEW;
+        const cacheKey = `${taxonomy}_${term}_${page}_${perPage}`;
         const cached = cacheGet<any>(cacheKey, "grid");
         if (cached) return cached;
 
-        const res = await fetch(`${FILMJEPANG_API_BASE_URL}/genres/${genreSlug}?page=${page}&per_page=${perPage}`, {
+        const res = await fetch(`${FILMJEPANG_API_BASE_URL}/${taxonomy}/${term}?page=${page}&per_page=${perPage}&sort=${sort}`, {
             method: "GET",
             headers: {
             "Authorization": `Bearer ${FILMJEPANG_API_KEY}`,

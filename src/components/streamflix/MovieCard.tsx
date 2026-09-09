@@ -25,7 +25,7 @@ export function MovieCard({
   const startY = useRef(0);
 
   const goToInfo = () => {
-    navigate({ to: "/movie/$id", params: { id: movie.id } });
+    navigate({ to: "/movies/$id", params: { id: movie.id } });
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -104,7 +104,7 @@ export function MovieCard({
               <Sparkles className="size-3 shrink-0" />
               {reasonLink ? (
                 <Link
-                  to="/movie/$id"
+                  to="/movies/$id"
                   params={{ id: reasonLink }}
                   className="line-clamp-1 underline decoration-purple-300/40 underline-offset-2 hover:text-purple-200"
                   onClick={(e) => e.stopPropagation()}

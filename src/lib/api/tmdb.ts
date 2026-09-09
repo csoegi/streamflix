@@ -1,6 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import type { Movie, MovieList, WPTerm } from "@/lib/types";
+import { 
+  REST_API_ENDPOINTS, 
+  GRID_SIZE_TERM_LIST, 
+  MOVIE_SORT_OPTIONS  
+} from '@/lib/constants';
 
 const EMPTY_MOVIE_LIST: MovieList = {
   page: 1,
@@ -60,17 +65,118 @@ export const fetchTopRated = createServerFn({ method: "POST" }).handler(async ()
   return (data.results || []).map((m: any) => toMovie(m));
 });
 
-export const fetchGenres = createServerFn({ method: "GET" }).handler(async () => {
-  const { getGenres } = await import("./wp.server");
-  const genres = await getGenres().catch(() => [] as WPTerm[]) ;
-  return genres;
+export const fetchMovieGenres = createServerFn({ method: "GET" }).handler(async () => {
+  const { getTerms } = await import("./wp.server");
+  const data = await getTerms(REST_API_ENDPOINTS.GENRES).catch(() => [] as WPTerm[]) ;
+  return data;
+});
+
+export const fetchMovieActors = createServerFn({ method: "GET" }).handler(async () => {
+  const { getTerms } = await import("./wp.server");
+  const data = await getTerms(REST_API_ENDPOINTS.ACTORS).catch(() => [] as WPTerm[]) ;
+  return data;
+});
+
+export const fetchMovieStudios = createServerFn({ method: "GET" }).handler(async () => {
+  const { getTerms } = await import("./wp.server");
+  const data = await getTerms(REST_API_ENDPOINTS.STUDIOS).catch(() => [] as WPTerm[]) ;
+  return data;
+});
+
+export const fetchMovieCountries = createServerFn({ method: "GET" }).handler(async () => {
+  const { getTerms } = await import("./wp.server");
+  const data = await getTerms(REST_API_ENDPOINTS.COUNTRIES).catch(() => [] as WPTerm[]) ;
+  return data;
+});
+
+export const fetchMovieCodes = createServerFn({ method: "GET" }).handler(async () => {
+  const { getTerms } = await import("./wp.server");
+  const data = await getTerms(REST_API_ENDPOINTS.CODES).catch(() => [] as WPTerm[]) ;
+  return data;
+});
+
+export const fetchMovieCategories = createServerFn({ method: "GET" }).handler(async () => {
+  const { getTerms } = await import("./wp.server");
+  const data = await getTerms(REST_API_ENDPOINTS.CATEGORIES).catch(() => [] as WPTerm[]) ;
+  return data;
+});
+
+export const fetchMovieYears = createServerFn({ method: "GET" }).handler(async () => {
+  const { getTerms } = await import("./wp.server");
+  const data = await getTerms(REST_API_ENDPOINTS.YEARS).catch(() => [] as WPTerm[]) ;
+  return data;
+});
+
+export const fetchMovieQualities = createServerFn({ method: "GET" }).handler(async () => {
+  const { getTerms } = await import("./wp.server");
+  const data = await getTerms(REST_API_ENDPOINTS.QUALITIES).catch(() => [] as WPTerm[]) ;
+  return data;
 });
 
 export const fetchMoviesByGenre = createServerFn({ method: "POST" }) 
-  .validator(z.object({ genreSlug: z.string(), page: z.string().default("1"), per_page: z.string().default("35") }))
+  .validator(z.object({ 
+    slug: z.string(), 
+    page: z.number().default(1), 
+    per_page: z.number().default(GRID_SIZE_TERM_LIST), 
+    sort: z.string().default(MOVIE_SORT_OPTIONS.NEW) 
+  }))
   .handler(async ({ data }) => {
-    const { getMoviesByGenre, toMovie } = await import("./wp.server");
-    const movieData = await getMoviesByGenre(data.genreSlug, { page: data.page, per_page: data.per_page }).catch(() => EMPTY_MOVIE_LIST);
+    const { getMoviesByTerm, toMovie } = await import("./wp.server");
+    const movieData = await getMoviesByTerm(REST_API_ENDPOINTS.GENRES, data.slug, { page: String(data.page), per_page: String(data.per_page), sort: data.sort }).catch(() => EMPTY_MOVIE_LIST);
+    return {
+      page: movieData.page || 1,
+      total_pages: movieData.total_pages || 0,
+      total_results: movieData.total_results || 0,
+      results: (movieData.results || []).map((m: any) => toMovie(m))
+    } as MovieList;
+});
+
+export const fetchMoviesByActors = createServerFn({ method: "POST" }) 
+  .validator(z.object({ 
+    slug: z.string(), 
+    page: z.number().default(1), 
+    per_page: z.number().default(GRID_SIZE_TERM_LIST), 
+    sort: z.string().default(MOVIE_SORT_OPTIONS.NEW) 
+  }))
+  .handler(async ({ data }) => {
+    const { getMoviesByTerm, toMovie } = await import("./wp.server");
+    const movieData = await getMoviesByTerm(REST_API_ENDPOINTS.ACTORS, data.slug, { page: String(data.page), per_page: String(data.per_page), sort: data.sort }).catch(() => EMPTY_MOVIE_LIST);
+    return {
+      page: movieData.page || 1,
+      total_pages: movieData.total_pages || 0,
+      total_results: movieData.total_results || 0,
+      results: (movieData.results || []).map((m: any) => toMovie(m))
+    } as MovieList;
+});
+
+export const fetchMoviesBySeries = createServerFn({ method: "POST" }) 
+  .validator(z.object({ 
+    slug: z.string(), 
+    page: z.number().default(1), 
+    per_page: z.number().default(GRID_SIZE_TERM_LIST), 
+    sort: z.string().default(MOVIE_SORT_OPTIONS.NEW) 
+  }))
+  .handler(async ({ data }) => {
+    const { getMoviesByTerm, toMovie } = await import("./wp.server");
+    const movieData = await getMoviesByTerm(REST_API_ENDPOINTS.SERIES, data.slug, { page: String(data.page), per_page: String(data.per_page), sort: data.sort }).catch(() => EMPTY_MOVIE_LIST);
+    return {
+      page: movieData.page || 1,
+      total_pages: movieData.total_pages || 0,
+      total_results: movieData.total_results || 0,
+      results: (movieData.results || []).map((m: any) => toMovie(m))
+    } as MovieList;
+});
+
+export const fetchMoviesByStudios = createServerFn({ method: "POST" }) 
+  .validator(z.object({ 
+    slug: z.string(), 
+    page: z.number().default(1), 
+    per_page: z.number().default(GRID_SIZE_TERM_LIST), 
+    sort: z.string().default(MOVIE_SORT_OPTIONS.NEW) 
+  }))
+  .handler(async ({ data }) => {
+    const { getMoviesByTerm, toMovie } = await import("./wp.server");
+    const movieData = await getMoviesByTerm(REST_API_ENDPOINTS.STUDIOS, data.slug, { page: String(data.page), per_page: String(data.per_page), sort: data.sort }).catch(() => EMPTY_MOVIE_LIST);
     return {
       page: movieData.page || 1,
       total_pages: movieData.total_pages || 0,

@@ -190,7 +190,7 @@ export function HeroBanner({ slides }: { slides: Movie[] }) {
               <Play className="size-4 fill-current sm:size-5" /> Play
             </Link>
             <Link
-              to="/movie/$id"
+              to="/movies/$id"
               params={{ id: s.id }}
               className="inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border hover:text-accent-foreground h-8 bg-gray-600/30 backdrop-blur-sm border-gray-400 text-white hover:bg-gray-600/50 font-semibold px-3 py-2 text-xs rounded-lg transition-all duration-200 sm:h-10 sm:px-6 sm:py-3 sm:text-base lg:h-11 lg:px-8 lg:py-4 lg:text-lg"
             >

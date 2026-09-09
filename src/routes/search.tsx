@@ -36,7 +36,7 @@ const searchSchema = z.object({
   sort: z.enum(["relevance", "popularity", "rating", "year", "title"]).optional().catch(undefined),
 });
 
-export const Route = createFileRoute("/_authenticated/search")({
+export const Route = createFileRoute("/search")({
   validateSearch: searchSchema,
   head: () => ({ meta: [{ title: "Search — StreamFlix" }] }),
   component: SearchPage,
@@ -404,7 +404,7 @@ function SearchPage() {
                     {visible.map((m) => (
                       <button
                         key={m.id}
-                        onClick={() => navigate({ to: "/movie/$id", params: { id: m.id } })}
+                        onClick={() => navigate({ to: "/movies/$id", params: { id: m.id } })}
                         className="w-full text-left"
                       >
                         <MovieCard movie={m} fluid />
