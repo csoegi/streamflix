@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { Link } from "@tanstack/react-router";
 import { Search, ChevronDown } from "lucide-react";
+import { MOVIE_SORT_OPTIONS } from "@/lib/constants";
 
 export interface WPTerm {
   term_id: number;
@@ -14,14 +15,12 @@ type SortOption = "videos" | "alpha";
 interface TermListingProps {
   terms: WPTerm[];
   placeholderText?: string;
-  targetRoutePath: "/collections/genres/$genreSlug" | "/collections/actresses/$actorSlug" | "/collections/makers/$studioSlug" | "/collections/series/$codePrefix";
-  paramKeyName: "genreSlug" | "actorSlug" | "studioSlug" | "codePrefix";
+  paramKeyName: "genreSlug" | "actorSlug" | "studioSlug" | "codeSlug";
 }
 
 export function TermListing({ 
   terms, 
   placeholderText = "Search...", 
-  targetRoutePath, 
   paramKeyName 
 }: TermListingProps) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -84,22 +83,56 @@ export function TermListing({
       {processedTerms.length > 0 ? (
         <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
           {processedTerms.map((item) => {
-            const cleanSlug = item.slug || item.name.toLowerCase().trim().replace(/\s+/g, '-');              
+            const cleanSlug = item.slug || item.name.toLowerCase().trim().replace(/\s+/g, '-'); 
+            if (paramKeyName === "genreSlug") {
+              return (
+                <Link
+                  key={item.term_id}
+                  to="/collections/genres/$genreSlug"
+                  params={{ genreSlug: cleanSlug }}
+                  className="flex items-center justify-between h-14 bg-zinc-900/30 border border-zinc-800/80 rounded-xl px-4 py-3 text-sm font-semibold text-zinc-200 transition hover:border-red-500 hover:bg-zinc-800/40 group shadow-sm"
+                >
+                  <span className="truncate group-hover:text-white transition duration-150">{item.name}</span>
+                  <span className="text-xs text-zinc-500 font-mono tracking-tight bg-zinc-900/80 px-2 py-0.5 rounded border border-zinc-800/60">{item.count}</span>
+                </Link>
+              );
+            }
+            if (paramKeyName === "actorSlug") {
+              return (
+                <Link
+                  key={item.term_id}
+                  to="/collections/actresses/$actorSlug"
+                  params={{ actorSlug: cleanSlug }}
+                  className="flex items-center justify-between h-14 bg-zinc-900/30 border border-zinc-800/80 rounded-xl px-4 py-3 text-sm font-semibold text-zinc-200 transition hover:border-red-500 hover:bg-zinc-800/40 group shadow-sm"
+                >
+                  <span className="truncate group-hover:text-white transition duration-150">{item.name}</span>
+                  <span className="text-xs text-zinc-500 font-mono tracking-tight bg-zinc-900/80 px-2 py-0.5 rounded border border-zinc-800/60">{item.count}</span>
+                </Link>
+              );
+            }
+            if (paramKeyName === "studioSlug") {
+              return (
+                <Link
+                  key={item.term_id}
+                  to="/collections/studios/$studioSlug"
+                  params={{ studioSlug: cleanSlug }}
+                  className="flex items-center justify-between h-14 bg-zinc-900/30 border border-zinc-800/80 rounded-xl px-4 py-3 text-sm font-semibold text-zinc-200 transition hover:border-red-500 hover:bg-zinc-800/40 group shadow-sm"
+                >
+                  <span className="truncate group-hover:text-white transition duration-150">{item.name}</span>
+                  <span className="text-xs text-zinc-500 font-mono tracking-tight bg-zinc-900/80 px-2 py-0.5 rounded border border-zinc-800/60">{item.count}</span>
+                </Link>
+              );
+            }
+            // Fallback
             return (
               <Link
                 key={item.term_id}
-                to={targetRoutePath as any}
-                params={{ [paramKeyName]: cleanSlug } as any} 
+                to="/collections/series/$codeSlug"
+                params={{ codeSlug: cleanSlug }}
                 className="flex items-center justify-between h-14 bg-zinc-900/30 border border-zinc-800/80 rounded-xl px-4 py-3 text-sm font-semibold text-zinc-200 transition hover:border-red-500 hover:bg-zinc-800/40 group shadow-sm"
               >
-                <span className="truncate group-hover:text-white transition duration-150">
-                  {item.name}
-                </span>
-                {item.count !== undefined && (
-                  <span className="text-xs text-zinc-500 font-mono tracking-tight bg-zinc-900/80 px-2 py-0.5 rounded border border-zinc-800/60 group-hover:text-red-500">
-                    {Number(item.count).toLocaleString()}
-                  </span>
-                )}
+                <span className="truncate group-hover:text-white transition duration-150">{item.name.toUpperCase()}</span>
+                <span className="text-xs text-zinc-500 font-mono tracking-tight bg-zinc-900/80 px-2 py-0.5 rounded border border-zinc-800/60">{item.count}</span>
               </Link>
             );
           })}

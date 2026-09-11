@@ -68,7 +68,7 @@ export function HeroBanner({ slides }: { slides: Movie[] }) {
       ? `${s.description.slice(0, MAX_DESC_CHARS - 3).trimEnd()}...`
       : s.description;
 
-  const titleLogoUrl = s.logo?.filePath ? buildTitleLogoUrl(s.logo.filePath) : null;
+  const titleLogoUrl = s.poster || s.backdrop;
 
   return (
     <section
@@ -149,7 +149,7 @@ export function HeroBanner({ slides }: { slides: Movie[] }) {
             <h1 className="mb-4 text-3xl md:text-4xl lg:text-5xl font-bold text-white drop-shadow-md">{s.title}</h1>
           )}
           
-          {s.genres.length > 0 && (
+          {s.genres && s.genres.length > 0 && (
             <div className="mb-2 flex flex-wrap items-center justify-center md:justify-start gap-1.5 text-sm sm:text-base font-normal text-white/80 tracking-wide drop-shadow">
               {s.genres.slice(0, 3).map((genreName, idx) => (
                 <span key={genreName} className="flex items-center gap-1.5">
@@ -170,7 +170,7 @@ export function HeroBanner({ slides }: { slides: Movie[] }) {
               </span>
             )}
             <AgeRatingBadge
-              rating={s.rating}
+              rating={String(s.rating)}
               className="rounded-full px-2.5 py-1 text-xs backdrop-blur-lg sm:px-3 sm:py-1.5"
             />
             <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-muted-foreground backdrop-blur-lg sm:px-3 sm:py-1.5">
@@ -184,7 +184,7 @@ export function HeroBanner({ slides }: { slides: Movie[] }) {
             <Link
               to="/watch/$id"
               params={{ id: s.id }}
-              search={{ source: "wp" }} // FIX: Passes source parameter to select player layouts
+              search={{ source: "wp" } as any} // FIX: Passes source parameter to select player layouts
               className="inline-flex items-center gap-2 rounded-md bg-white px-3 py-2 text-xs font-semibold text-black transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95 hover:bg-white/85 sm:px-5 sm:py-3 sm:text-sm shadow-lg"
             >
               <Play className="size-4 fill-current sm:size-5" /> Play

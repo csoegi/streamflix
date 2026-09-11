@@ -16,10 +16,8 @@ interface TermMovieListingProps {
   activeTermSlug: string;
   activePage: number;
   totalPages: number;
-  activeSort: MovieSortOptions;
-  // Dynamic navigation parameter keys mapping configuration boundaries
-  chipTargetRoutePath: "/collections/genres/$genreSlug" | "/collections/actresses/$actorSlug" | "/collections/makers/$studioSlug" | "/collections/series/$codePrefix";
-  chipParamKeyName: "genreSlug" | "actorSlug" | "studioSlug" | "codePrefix";
+  activeSort: string;
+  paramKeyName: "genreSlug" | "actorSlug" | "studioSlug" | "codeSlug";
 }
 
 export function TermMovieListing({
@@ -29,8 +27,7 @@ export function TermMovieListing({
   activePage,
   totalPages,
   activeSort,
-  chipTargetRoutePath,
-  chipParamKeyName,
+  paramKeyName,
 }: TermMovieListingProps) {
   const navigate = useNavigate();
 
@@ -61,20 +58,72 @@ export function TermMovieListing({
           {top10Terms.map((term) => {
             const currentSlug = term.slug || term.name.toLowerCase().trim().replace(/\s+/g, "-");
             const isActive = currentSlug === activeTermSlug;
-            
-            return (
-              <Link
-                key={term.term_id}
-                to={chipTargetRoutePath as any}
-                params={{ [chipParamKeyName]: currentSlug } as any}
-                className={`rounded-full border px-4 py-2 text-sm transition font-medium shadow-sm ${
+            if (paramKeyName === "genreSlug") {
+              return (
+                <Link
+                  key={term.term_id}
+                  to="/collections/genres/$genreSlug"
+                  params={{ genreSlug: currentSlug }}
+                  search={true} // forward seearch param
+                  className={`rounded-full border px-4 py-2 text-sm transition font-medium shadow-sm ${
                   isActive
                     ? "border-red-500 bg-red-600 text-white font-semibold scale-105"
                     : "border-zinc-800 text-neutral-400 bg-zinc-900/30 hover:border-red-500 hover:text-white hover:bg-zinc-800/40"
-                }`}
-              >
-                {term.name}
-              </Link>
+                  }`}
+                >
+                  {term.name}
+                </Link>
+              );
+            }
+            if (paramKeyName === "actorSlug") {
+              return (
+                <Link
+                  key={term.term_id}
+                  to="/collections/actresses/$actorSlug"
+                  params={{ actorSlug: currentSlug }}
+                  search={true} // forward seearch param
+                  className={`rounded-full border px-4 py-2 text-sm transition font-medium shadow-sm ${
+                  isActive
+                    ? "border-red-500 bg-red-600 text-white font-semibold scale-105"
+                    : "border-zinc-800 text-neutral-400 bg-zinc-900/30 hover:border-red-500 hover:text-white hover:bg-zinc-800/40"
+                  }`}
+                >
+                  {term.name}
+                </Link>
+              );
+            }
+            if (paramKeyName === "studioSlug") {
+              return (
+                <Link
+                  key={term.term_id}
+                  to="/collections/studios/$studioSlug"
+                  params={{ studioSlug: currentSlug }}
+                  search={true} // forward seearch param
+                  className={`rounded-full border px-4 py-2 text-sm transition font-medium shadow-sm ${
+                  isActive
+                    ? "border-red-500 bg-red-600 text-white font-semibold scale-105"
+                    : "border-zinc-800 text-neutral-400 bg-zinc-900/30 hover:border-red-500 hover:text-white hover:bg-zinc-800/40"
+                  }`}
+                >
+                  {term.name}
+                </Link>
+              );
+            }
+            // Fallback
+            return (
+              <Link
+                  key={term.term_id}
+                  to="/collections/series/$codeSlug"
+                  params={{ codeSlug: currentSlug }}
+                  search={true} // forward seearch param
+                  className={`rounded-full border px-4 py-2 text-sm transition font-medium shadow-sm ${
+                  isActive
+                    ? "border-red-500 bg-red-600 text-white font-semibold scale-105"
+                    : "border-zinc-800 text-neutral-400 bg-zinc-900/30 hover:border-red-500 hover:text-white hover:bg-zinc-800/40"
+                  }`}
+                >
+                  {term.name.toUpperCase()}
+                </Link>
             );
           })}
         </div>
@@ -89,9 +138,9 @@ export function TermMovieListing({
             >                
               <option value="new">Recently Added</option>
               <option value="release_date">Release Date</option>
-              <option value="hot">Hot (Today Views)</option>
-              <option value="trending">Trending (Weekly)</option>
-              <option value="popular">Most Popular</option>
+              <option value="hot">Hot</option>
+              <option value="trending">Trending</option>
+              <option value="popular">Most Viewed</option>
             </select>
             <ChevronDown className="absolute right-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
           </div>

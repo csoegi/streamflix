@@ -4,12 +4,14 @@ import { Footer } from "@/components/streamflix/Footer";
 import { CinematicBanner } from "@/components/streamflix/CinematicBanner";
 import { TermListing } from "@/components/streamflix/TermListing";
 import { TermListingSkeleton } from "@/components/streamflix/TermListingSkeleton";
-import { fetchMovieActors } from "@/lib/api/tmdb";
+import { actorTermsQueryOptions } from "@/lib/api/tmdb";
 
-export const Route = createFileRoute("/collections/actresses")({
+export const Route = createFileRoute("/collections/actresses/")({
   shouldReload: true, // force reload to avoid cached data
-  loader: async () => {
-    const [actors] = await Promise.all([fetchMovieActors()]);
+  loader: async ({ context: { queryClient } }) => {
+    const [actors] = await Promise.all([
+        queryClient.ensureQueryData(actorTermsQueryOptions()),
+    ]);
     return { terms: actors };
   },
   head: () => ({ meta: [{ title: "Explore — Actresses" }] }),
@@ -35,7 +37,6 @@ function ActressesPage() {
         key="actresses-listing-view"
         terms={terms} 
         placeholderText="Search actresses..." 
-        targetRoutePath="/collections/actresses/$actorSlug"
         paramKeyName="actorSlug"
       />
       <Footer />

@@ -4,12 +4,14 @@ import { Footer } from "@/components/streamflix/Footer";
 import { CinematicBanner } from "@/components/streamflix/CinematicBanner";
 import { TermListing } from "@/components/streamflix/TermListing";
 import { TermListingSkeleton } from "@/components/streamflix/TermListingSkeleton";
-import { fetchMovieStudios } from "@/lib/api/tmdb";
+import { studioTermsQueryOptions } from "@/lib/api/tmdb";
 
-export const Route = createFileRoute("/collections/studios")({
+export const Route = createFileRoute("/collections/studios/")({
   shouldReload: true, // force reload to avoid cached data
-  loader: async () => {
-    const [studios] = await Promise.all([fetchMovieStudios()]);
+  loader: async ({ context: { queryClient } }) => {
+    const [studios] = await Promise.all([
+        queryClient.ensureQueryData(studioTermsQueryOptions()),
+    ]);
     return { terms: studios };
   },
   head: () => ({ meta: [{ title: "Explore — Production Studios" }] }),
@@ -35,7 +37,6 @@ function StudiosPage() {
         key="studios-listing-view"
         terms={terms} 
         placeholderText="Search studios..." 
-        targetRoutePath="/collections/studios/$studioSlug"
         paramKeyName="studioSlug"
       />
       <Footer />

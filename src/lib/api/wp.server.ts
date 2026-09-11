@@ -1,6 +1,6 @@
 import type { Movie, MovieList, WPTerm } from "@/lib/types";
 import { getServerConfig } from "@/lib/config.server";
-import { MOVIE_SORT_OPTIONS, GRID_SIZE_TERM_LIST } from "@/lib/constants";
+import { MOVIE_SORT_OPTIONS, PAGED_LIST_SIZE } from "@/lib/constants";
 
 // Keep TMDB references intact for image layout lookups and asset fallback scripts
 const TMDB_BASE = "https://api.themoviedb.org/3";
@@ -83,9 +83,13 @@ export function cacheSet(key: string, data: unknown, type: "metadata" | "grid" =
 export async function getMovies(params: Record<string, string> = {}): Promise<any> {
     const page = params.page ? parseInt(params.page) : 1;
     const perPage = params.per_page ? parseInt(params.per_page) : 35;
+    const sort = params.sort || MOVIE_SORT_OPTIONS.NEW;
+    const cacheKey = `movies_${page}_${perPage}_{$sort}`;
+    const cached = cacheGet<any>(cacheKey, "grid");
+    if (cached) return cached;
 
     try {
-        const res = await fetch(`${FILMJEPANG_API_BASE_URL}?page=${page}&per_page=${perPage}`, {
+        const res = await fetch(`${FILMJEPANG_API_BASE_URL}?page=${page}&per_page=${perPage}&sort=${sort}`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${FILMJEPANG_API_KEY}`,
@@ -96,6 +100,7 @@ export async function getMovies(params: Record<string, string> = {}): Promise<an
         if (!res.ok) throw new Error(`HTTP Code ${res.status}`);
 
         const data = await res.json();
+        cacheSet(cacheKey, data, "grid");
 
         return {
             page: data.page,
@@ -166,10 +171,10 @@ export async function getTerms(taxonomy: string): Promise<any[]> {
 
 export async function getMoviesByTerm(taxonomy: string, term: string, params: Record<string, string> = {}): Promise<any> {
     try {
-        const page = params.page ? parseInt(params.page) : 1;
-        const perPage = params.per_page ? parseInt(params.per_page) : GRID_SIZE_TERM_LIST;
+        const page = parseInt(params.page ?? "1");
+        const perPage = parseInt(params.per_page ?? "") || PAGED_LIST_SIZE.GRID;
         const sort = params.sort || MOVIE_SORT_OPTIONS.NEW;
-        const cacheKey = `${taxonomy}_${term}_${page}_${perPage}`;
+        const cacheKey = `${taxonomy}_${term}_${page}_${perPage}_${sort}`;
         const cached = cacheGet<any>(cacheKey, "grid");
         if (cached) return cached;
 

@@ -4,39 +4,40 @@ import { Footer } from "@/components/streamflix/Footer";
 import { CinematicBanner } from "@/components/streamflix/CinematicBanner";
 import { TermListing } from "@/components/streamflix/TermListing";
 import { TermListingSkeleton } from "@/components/streamflix/TermListingSkeleton";
-import { fetchMovieCodes } from "@/lib/api/tmdb";
+import { genreTermsQueryOptions } from "@/lib/api/tmdb";
 
-export const Route = createFileRoute("/collections/series")({
+export const Route = createFileRoute("/collections/genres/")({
   shouldReload: true, // force reload to avoid cached data
-  loader: async () => {
-    const [series] = await Promise.all([fetchMovieCodes()]);
-    return { terms: series };
+  loader: async ({ context: { queryClient } }) => {
+    const [genres] = await Promise.all([
+        queryClient.ensureQueryData(genreTermsQueryOptions()),
+    ]);
+    return { terms: genres };
   },
-  head: () => ({ meta: [{ title: "Explore — Series" }] }),
+  head: () => ({ meta: [{ title: "Explore — Genres" }] }),
   pendingComponent: TermListingSkeleton,
-  component: SeriesPage,
+  component: GenresPage,
 });
 
-function SeriesPage() {
+function GenresPage() {
   const { terms } = Route.useLoaderData();
 
   return (
     <div className="min-h-dvh bg-background text-foreground">
       <Navbar />
       <CinematicBanner
-        themeColor="purple"
-        title="Pick a serie"
+        themeColor="emerald"
+        title="Pick a genre"
         totalCount={terms.length}
-        countLabelSingular="serie"
-        countLabelPlural="series"
+        countLabelSingular="genre"
+        countLabelPlural="genres"
       />
       {/* Add the unique key prop to avoid component being cached with same data */}
       <TermListing 
-        key="series-listing-view"
+        key="genres-listing-view"
         terms={terms} 
-        placeholderText="Search series..." 
-        targetRoutePath="/collections/series/$codePrefix"
-        paramKeyName="codePrefix"
+        placeholderText="Search genres..." 
+        paramKeyName="genreSlug"
       />
       <Footer />
     </div>

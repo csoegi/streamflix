@@ -20,10 +20,6 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WatchIdRouteImport } from './routes/watch.$id'
 import { Route as MoviesIdRouteImport } from './routes/movies.$id'
-import { Route as CollectionsStudiosRouteImport } from './routes/collections/studios'
-import { Route as CollectionsSeriesRouteImport } from './routes/collections/series'
-import { Route as CollectionsGenresRouteImport } from './routes/collections/genres'
-import { Route as CollectionsActressesRouteImport } from './routes/collections/actresses'
 import { Route as AuthActionRouteImport } from './routes/auth/action'
 import { Route as ApiVerifyRecaptchaRouteImport } from './routes/api/verify-recaptcha'
 import { Route as ApiSendNotificationRouteImport } from './routes/api/send-notification'
@@ -40,10 +36,14 @@ import { Route as AuthenticatedForcePasswordRouteImport } from './routes/_authen
 import { Route as AuthenticatedExploreRouteImport } from './routes/_authenticated/explore'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
 import { Route as AuthenticatedBrowseRouteImport } from './routes/_authenticated/browse'
-import { Route as CollectionsStudiosStudioSlugRouteImport } from './routes/collections/studios.$studioSlug'
-import { Route as CollectionsSeriesCodeSlugRouteImport } from './routes/collections/series.$codeSlug'
-import { Route as CollectionsGenresGenreSlugRouteImport } from './routes/collections/genres.$genreSlug'
-import { Route as CollectionsActressesActorSlugRouteImport } from './routes/collections/actresses.$actorSlug'
+import { Route as CollectionsStudiosIndexRouteImport } from './routes/collections/studios/index'
+import { Route as CollectionsSeriesIndexRouteImport } from './routes/collections/series/index'
+import { Route as CollectionsGenresIndexRouteImport } from './routes/collections/genres/index'
+import { Route as CollectionsActressesIndexRouteImport } from './routes/collections/actresses/index'
+import { Route as CollectionsStudiosStudioSlugRouteImport } from './routes/collections/studios/$studioSlug'
+import { Route as CollectionsSeriesCodeSlugRouteImport } from './routes/collections/series/$codeSlug'
+import { Route as CollectionsGenresGenreSlugRouteImport } from './routes/collections/genres/$genreSlug'
+import { Route as CollectionsActressesActorSlugRouteImport } from './routes/collections/actresses/$actorSlug'
 import { Route as AuthenticatedPersonIdRouteImport } from './routes/_authenticated/person.$id'
 
 const TosRoute = TosRouteImport.update({
@@ -99,26 +99,6 @@ const MoviesIdRoute = MoviesIdRouteImport.update({
   id: '/$id',
   path: '/$id',
   getParentRoute: () => MoviesRoute,
-} as any)
-const CollectionsStudiosRoute = CollectionsStudiosRouteImport.update({
-  id: '/collections/studios',
-  path: '/collections/studios',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CollectionsSeriesRoute = CollectionsSeriesRouteImport.update({
-  id: '/collections/series',
-  path: '/collections/series',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CollectionsGenresRoute = CollectionsGenresRouteImport.update({
-  id: '/collections/genres',
-  path: '/collections/genres',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CollectionsActressesRoute = CollectionsActressesRouteImport.update({
-  id: '/collections/actresses',
-  path: '/collections/actresses',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthActionRoute = AuthActionRouteImport.update({
   id: '/action',
@@ -202,29 +182,50 @@ const AuthenticatedBrowseRoute = AuthenticatedBrowseRouteImport.update({
   path: '/browse',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const CollectionsStudiosIndexRoute = CollectionsStudiosIndexRouteImport.update({
+  id: '/collections/studios/',
+  path: '/collections/studios/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CollectionsSeriesIndexRoute = CollectionsSeriesIndexRouteImport.update({
+  id: '/collections/series/',
+  path: '/collections/series/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CollectionsGenresIndexRoute = CollectionsGenresIndexRouteImport.update({
+  id: '/collections/genres/',
+  path: '/collections/genres/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CollectionsActressesIndexRoute =
+  CollectionsActressesIndexRouteImport.update({
+    id: '/collections/actresses/',
+    path: '/collections/actresses/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const CollectionsStudiosStudioSlugRoute =
   CollectionsStudiosStudioSlugRouteImport.update({
-    id: '/$studioSlug',
-    path: '/$studioSlug',
-    getParentRoute: () => CollectionsStudiosRoute,
+    id: '/collections/studios/$studioSlug',
+    path: '/collections/studios/$studioSlug',
+    getParentRoute: () => rootRouteImport,
   } as any)
 const CollectionsSeriesCodeSlugRoute =
   CollectionsSeriesCodeSlugRouteImport.update({
-    id: '/$codeSlug',
-    path: '/$codeSlug',
-    getParentRoute: () => CollectionsSeriesRoute,
+    id: '/collections/series/$codeSlug',
+    path: '/collections/series/$codeSlug',
+    getParentRoute: () => rootRouteImport,
   } as any)
 const CollectionsGenresGenreSlugRoute =
   CollectionsGenresGenreSlugRouteImport.update({
-    id: '/$genreSlug',
-    path: '/$genreSlug',
-    getParentRoute: () => CollectionsGenresRoute,
+    id: '/collections/genres/$genreSlug',
+    path: '/collections/genres/$genreSlug',
+    getParentRoute: () => rootRouteImport,
   } as any)
 const CollectionsActressesActorSlugRoute =
   CollectionsActressesActorSlugRouteImport.update({
-    id: '/$actorSlug',
-    path: '/$actorSlug',
-    getParentRoute: () => CollectionsActressesRoute,
+    id: '/collections/actresses/$actorSlug',
+    path: '/collections/actresses/$actorSlug',
+    getParentRoute: () => rootRouteImport,
   } as any)
 const AuthenticatedPersonIdRoute = AuthenticatedPersonIdRouteImport.update({
   id: '/person/$id',
@@ -257,10 +258,6 @@ export interface FileRoutesByFullPath {
   '/api/send-notification': typeof ApiSendNotificationRoute
   '/api/verify-recaptcha': typeof ApiVerifyRecaptchaRoute
   '/auth/action': typeof AuthActionRoute
-  '/collections/actresses': typeof CollectionsActressesRouteWithChildren
-  '/collections/genres': typeof CollectionsGenresRouteWithChildren
-  '/collections/series': typeof CollectionsSeriesRouteWithChildren
-  '/collections/studios': typeof CollectionsStudiosRouteWithChildren
   '/movies/$id': typeof MoviesIdRoute
   '/watch/$id': typeof WatchIdRoute
   '/person/$id': typeof AuthenticatedPersonIdRoute
@@ -268,6 +265,10 @@ export interface FileRoutesByFullPath {
   '/collections/genres/$genreSlug': typeof CollectionsGenresGenreSlugRoute
   '/collections/series/$codeSlug': typeof CollectionsSeriesCodeSlugRoute
   '/collections/studios/$studioSlug': typeof CollectionsStudiosStudioSlugRoute
+  '/collections/actresses/': typeof CollectionsActressesIndexRoute
+  '/collections/genres/': typeof CollectionsGenresIndexRoute
+  '/collections/series/': typeof CollectionsSeriesIndexRoute
+  '/collections/studios/': typeof CollectionsStudiosIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -294,10 +295,6 @@ export interface FileRoutesByTo {
   '/api/send-notification': typeof ApiSendNotificationRoute
   '/api/verify-recaptcha': typeof ApiVerifyRecaptchaRoute
   '/auth/action': typeof AuthActionRoute
-  '/collections/actresses': typeof CollectionsActressesRouteWithChildren
-  '/collections/genres': typeof CollectionsGenresRouteWithChildren
-  '/collections/series': typeof CollectionsSeriesRouteWithChildren
-  '/collections/studios': typeof CollectionsStudiosRouteWithChildren
   '/movies/$id': typeof MoviesIdRoute
   '/watch/$id': typeof WatchIdRoute
   '/person/$id': typeof AuthenticatedPersonIdRoute
@@ -305,6 +302,10 @@ export interface FileRoutesByTo {
   '/collections/genres/$genreSlug': typeof CollectionsGenresGenreSlugRoute
   '/collections/series/$codeSlug': typeof CollectionsSeriesCodeSlugRoute
   '/collections/studios/$studioSlug': typeof CollectionsStudiosStudioSlugRoute
+  '/collections/actresses': typeof CollectionsActressesIndexRoute
+  '/collections/genres': typeof CollectionsGenresIndexRoute
+  '/collections/series': typeof CollectionsSeriesIndexRoute
+  '/collections/studios': typeof CollectionsStudiosIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -333,10 +334,6 @@ export interface FileRoutesById {
   '/api/send-notification': typeof ApiSendNotificationRoute
   '/api/verify-recaptcha': typeof ApiVerifyRecaptchaRoute
   '/auth/action': typeof AuthActionRoute
-  '/collections/actresses': typeof CollectionsActressesRouteWithChildren
-  '/collections/genres': typeof CollectionsGenresRouteWithChildren
-  '/collections/series': typeof CollectionsSeriesRouteWithChildren
-  '/collections/studios': typeof CollectionsStudiosRouteWithChildren
   '/movies/$id': typeof MoviesIdRoute
   '/watch/$id': typeof WatchIdRoute
   '/_authenticated/person/$id': typeof AuthenticatedPersonIdRoute
@@ -344,6 +341,10 @@ export interface FileRoutesById {
   '/collections/genres/$genreSlug': typeof CollectionsGenresGenreSlugRoute
   '/collections/series/$codeSlug': typeof CollectionsSeriesCodeSlugRoute
   '/collections/studios/$studioSlug': typeof CollectionsStudiosStudioSlugRoute
+  '/collections/actresses/': typeof CollectionsActressesIndexRoute
+  '/collections/genres/': typeof CollectionsGenresIndexRoute
+  '/collections/series/': typeof CollectionsSeriesIndexRoute
+  '/collections/studios/': typeof CollectionsStudiosIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -372,10 +373,6 @@ export interface FileRouteTypes {
     | '/api/send-notification'
     | '/api/verify-recaptcha'
     | '/auth/action'
-    | '/collections/actresses'
-    | '/collections/genres'
-    | '/collections/series'
-    | '/collections/studios'
     | '/movies/$id'
     | '/watch/$id'
     | '/person/$id'
@@ -383,6 +380,10 @@ export interface FileRouteTypes {
     | '/collections/genres/$genreSlug'
     | '/collections/series/$codeSlug'
     | '/collections/studios/$studioSlug'
+    | '/collections/actresses/'
+    | '/collections/genres/'
+    | '/collections/series/'
+    | '/collections/studios/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -409,10 +410,6 @@ export interface FileRouteTypes {
     | '/api/send-notification'
     | '/api/verify-recaptcha'
     | '/auth/action'
-    | '/collections/actresses'
-    | '/collections/genres'
-    | '/collections/series'
-    | '/collections/studios'
     | '/movies/$id'
     | '/watch/$id'
     | '/person/$id'
@@ -420,6 +417,10 @@ export interface FileRouteTypes {
     | '/collections/genres/$genreSlug'
     | '/collections/series/$codeSlug'
     | '/collections/studios/$studioSlug'
+    | '/collections/actresses'
+    | '/collections/genres'
+    | '/collections/series'
+    | '/collections/studios'
   id:
     | '__root__'
     | '/'
@@ -447,10 +448,6 @@ export interface FileRouteTypes {
     | '/api/send-notification'
     | '/api/verify-recaptcha'
     | '/auth/action'
-    | '/collections/actresses'
-    | '/collections/genres'
-    | '/collections/series'
-    | '/collections/studios'
     | '/movies/$id'
     | '/watch/$id'
     | '/_authenticated/person/$id'
@@ -458,6 +455,10 @@ export interface FileRouteTypes {
     | '/collections/genres/$genreSlug'
     | '/collections/series/$codeSlug'
     | '/collections/studios/$studioSlug'
+    | '/collections/actresses/'
+    | '/collections/genres/'
+    | '/collections/series/'
+    | '/collections/studios/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -476,11 +477,15 @@ export interface RootRouteChildren {
   ApiReleaseNotificationsCronRoute: typeof ApiReleaseNotificationsCronRoute
   ApiSendNotificationRoute: typeof ApiSendNotificationRoute
   ApiVerifyRecaptchaRoute: typeof ApiVerifyRecaptchaRoute
-  CollectionsActressesRoute: typeof CollectionsActressesRouteWithChildren
-  CollectionsGenresRoute: typeof CollectionsGenresRouteWithChildren
-  CollectionsSeriesRoute: typeof CollectionsSeriesRouteWithChildren
-  CollectionsStudiosRoute: typeof CollectionsStudiosRouteWithChildren
   WatchIdRoute: typeof WatchIdRoute
+  CollectionsActressesActorSlugRoute: typeof CollectionsActressesActorSlugRoute
+  CollectionsGenresGenreSlugRoute: typeof CollectionsGenresGenreSlugRoute
+  CollectionsSeriesCodeSlugRoute: typeof CollectionsSeriesCodeSlugRoute
+  CollectionsStudiosStudioSlugRoute: typeof CollectionsStudiosStudioSlugRoute
+  CollectionsActressesIndexRoute: typeof CollectionsActressesIndexRoute
+  CollectionsGenresIndexRoute: typeof CollectionsGenresIndexRoute
+  CollectionsSeriesIndexRoute: typeof CollectionsSeriesIndexRoute
+  CollectionsStudiosIndexRoute: typeof CollectionsStudiosIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -561,34 +566,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/movies/$id'
       preLoaderRoute: typeof MoviesIdRouteImport
       parentRoute: typeof MoviesRoute
-    }
-    '/collections/studios': {
-      id: '/collections/studios'
-      path: '/collections/studios'
-      fullPath: '/collections/studios'
-      preLoaderRoute: typeof CollectionsStudiosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/collections/series': {
-      id: '/collections/series'
-      path: '/collections/series'
-      fullPath: '/collections/series'
-      preLoaderRoute: typeof CollectionsSeriesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/collections/genres': {
-      id: '/collections/genres'
-      path: '/collections/genres'
-      fullPath: '/collections/genres'
-      preLoaderRoute: typeof CollectionsGenresRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/collections/actresses': {
-      id: '/collections/actresses'
-      path: '/collections/actresses'
-      fullPath: '/collections/actresses'
-      preLoaderRoute: typeof CollectionsActressesRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/auth/action': {
       id: '/auth/action'
@@ -702,33 +679,61 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBrowseRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/collections/studios/': {
+      id: '/collections/studios/'
+      path: '/collections/studios'
+      fullPath: '/collections/studios/'
+      preLoaderRoute: typeof CollectionsStudiosIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/collections/series/': {
+      id: '/collections/series/'
+      path: '/collections/series'
+      fullPath: '/collections/series/'
+      preLoaderRoute: typeof CollectionsSeriesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/collections/genres/': {
+      id: '/collections/genres/'
+      path: '/collections/genres'
+      fullPath: '/collections/genres/'
+      preLoaderRoute: typeof CollectionsGenresIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/collections/actresses/': {
+      id: '/collections/actresses/'
+      path: '/collections/actresses'
+      fullPath: '/collections/actresses/'
+      preLoaderRoute: typeof CollectionsActressesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/collections/studios/$studioSlug': {
       id: '/collections/studios/$studioSlug'
-      path: '/$studioSlug'
+      path: '/collections/studios/$studioSlug'
       fullPath: '/collections/studios/$studioSlug'
       preLoaderRoute: typeof CollectionsStudiosStudioSlugRouteImport
-      parentRoute: typeof CollectionsStudiosRoute
+      parentRoute: typeof rootRouteImport
     }
     '/collections/series/$codeSlug': {
       id: '/collections/series/$codeSlug'
-      path: '/$codeSlug'
+      path: '/collections/series/$codeSlug'
       fullPath: '/collections/series/$codeSlug'
       preLoaderRoute: typeof CollectionsSeriesCodeSlugRouteImport
-      parentRoute: typeof CollectionsSeriesRoute
+      parentRoute: typeof rootRouteImport
     }
     '/collections/genres/$genreSlug': {
       id: '/collections/genres/$genreSlug'
-      path: '/$genreSlug'
+      path: '/collections/genres/$genreSlug'
       fullPath: '/collections/genres/$genreSlug'
       preLoaderRoute: typeof CollectionsGenresGenreSlugRouteImport
-      parentRoute: typeof CollectionsGenresRoute
+      parentRoute: typeof rootRouteImport
     }
     '/collections/actresses/$actorSlug': {
       id: '/collections/actresses/$actorSlug'
-      path: '/$actorSlug'
+      path: '/collections/actresses/$actorSlug'
       fullPath: '/collections/actresses/$actorSlug'
       preLoaderRoute: typeof CollectionsActressesActorSlugRouteImport
-      parentRoute: typeof CollectionsActressesRoute
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/person/$id': {
       id: '/_authenticated/person/$id'
@@ -790,50 +795,6 @@ const MoviesRouteChildren: MoviesRouteChildren = {
 const MoviesRouteWithChildren =
   MoviesRoute._addFileChildren(MoviesRouteChildren)
 
-interface CollectionsActressesRouteChildren {
-  CollectionsActressesActorSlugRoute: typeof CollectionsActressesActorSlugRoute
-}
-
-const CollectionsActressesRouteChildren: CollectionsActressesRouteChildren = {
-  CollectionsActressesActorSlugRoute: CollectionsActressesActorSlugRoute,
-}
-
-const CollectionsActressesRouteWithChildren =
-  CollectionsActressesRoute._addFileChildren(CollectionsActressesRouteChildren)
-
-interface CollectionsGenresRouteChildren {
-  CollectionsGenresGenreSlugRoute: typeof CollectionsGenresGenreSlugRoute
-}
-
-const CollectionsGenresRouteChildren: CollectionsGenresRouteChildren = {
-  CollectionsGenresGenreSlugRoute: CollectionsGenresGenreSlugRoute,
-}
-
-const CollectionsGenresRouteWithChildren =
-  CollectionsGenresRoute._addFileChildren(CollectionsGenresRouteChildren)
-
-interface CollectionsSeriesRouteChildren {
-  CollectionsSeriesCodeSlugRoute: typeof CollectionsSeriesCodeSlugRoute
-}
-
-const CollectionsSeriesRouteChildren: CollectionsSeriesRouteChildren = {
-  CollectionsSeriesCodeSlugRoute: CollectionsSeriesCodeSlugRoute,
-}
-
-const CollectionsSeriesRouteWithChildren =
-  CollectionsSeriesRoute._addFileChildren(CollectionsSeriesRouteChildren)
-
-interface CollectionsStudiosRouteChildren {
-  CollectionsStudiosStudioSlugRoute: typeof CollectionsStudiosStudioSlugRoute
-}
-
-const CollectionsStudiosRouteChildren: CollectionsStudiosRouteChildren = {
-  CollectionsStudiosStudioSlugRoute: CollectionsStudiosStudioSlugRoute,
-}
-
-const CollectionsStudiosRouteWithChildren =
-  CollectionsStudiosRoute._addFileChildren(CollectionsStudiosRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
@@ -850,11 +811,15 @@ const rootRouteChildren: RootRouteChildren = {
   ApiReleaseNotificationsCronRoute: ApiReleaseNotificationsCronRoute,
   ApiSendNotificationRoute: ApiSendNotificationRoute,
   ApiVerifyRecaptchaRoute: ApiVerifyRecaptchaRoute,
-  CollectionsActressesRoute: CollectionsActressesRouteWithChildren,
-  CollectionsGenresRoute: CollectionsGenresRouteWithChildren,
-  CollectionsSeriesRoute: CollectionsSeriesRouteWithChildren,
-  CollectionsStudiosRoute: CollectionsStudiosRouteWithChildren,
   WatchIdRoute: WatchIdRoute,
+  CollectionsActressesActorSlugRoute: CollectionsActressesActorSlugRoute,
+  CollectionsGenresGenreSlugRoute: CollectionsGenresGenreSlugRoute,
+  CollectionsSeriesCodeSlugRoute: CollectionsSeriesCodeSlugRoute,
+  CollectionsStudiosStudioSlugRoute: CollectionsStudiosStudioSlugRoute,
+  CollectionsActressesIndexRoute: CollectionsActressesIndexRoute,
+  CollectionsGenresIndexRoute: CollectionsGenresIndexRoute,
+  CollectionsSeriesIndexRoute: CollectionsSeriesIndexRoute,
+  CollectionsStudiosIndexRoute: CollectionsStudiosIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

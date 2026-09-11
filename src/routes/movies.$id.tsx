@@ -167,7 +167,7 @@ function MoviePage() {
     "film-bokep-tidak-sensor": "Uncensored"
   };
   const isTv = movie.id.startsWith("tv-");
-  const titleLogoUrl = logo?.filePath ? buildTitleLogoUrl(logo.filePath) : null;
+  const titleLogoUrl = movie?.poster || movie?.backdrop;
   const [descExpanded, setDescExpanded] = useState(false);
   const castScrollerRef = useRef<HTMLDivElement | null>(null);
   const [showPicker, setShowPicker] = useState(true);
@@ -367,7 +367,7 @@ function MoviePage() {
               </div>
 
               <div className="flex flex-wrap gap-2">
-                {movie.genres && movie.genres.length > 0 ? (
+                {movie.genres && movie.genres.length > 0 && (
                   // Pick up to 10 genres to be displayed
                   movie.genres.slice(0, 10).map((genreName: string, i: number) => {
                     // Normalize the name string directly into a clean lowercase URL slug asset tracker
@@ -376,28 +376,12 @@ function MoviePage() {
                     return (
                       <Link
                         key={`${genreSlug}-${i}`}
-                        to="/explore/$genreId"
-                        params={{ genreId: genreSlug }} // Passes the string slug directly as the resource parameter
-                        search={{ q: genreName }}        // Keeps your app's standard query search parameter filled
+                        to="/collections/genres/$genreSlug"
+                        params={{ genreSlug: genreSlug }} // Passes the string slug directly as the resource parameter
+                        search={{ q: genreSlug } as any}        // Keeps your app's standard query search parameter filled
                         className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-foreground backdrop-blur-lg transition hover:bg-white/10 hover:border-primary/50"
                       >
                         {genreName}
-                      </Link>
-                    );
-                  })
-                ) : (
-                  // Fallback: Legacy loop to handle native TMDB items if they ever load
-                  movie.genreIds?.map((gid: number, i: number) => {
-                    const label = genreLabels[String(gid)] || "Explore";
-                    return (
-                      <Link
-                        key={`${gid}-${i}`}
-                        to="/explore/$genreId"
-                        params={{ genreId: String(gid) }}
-                        search={{ q: label }}
-                        className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-foreground backdrop-blur-lg transition hover:bg-white/10 hover:border-primary/50"
-                      >
-                        {label}
                       </Link>
                     );
                   })
@@ -422,8 +406,8 @@ function MoviePage() {
                   params={{ id: movie.id }}
                   search={
                     isTv
-                      ? { autoplay: true, season: 1, episode: 1, source: "wp" }
-                      : { autoplay: true, source: "wp" } // Injects source parameter directly into target router paths
+                      ? { autoplay: true, season: 1, episode: 1 }
+                      : { autoplay: true } // Injects source parameter directly into target router paths
                   }
                   className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md bg-white px-5 py-2.5 text-sm font-semibold text-black hover:bg-white/85 sm:px-6 sm:py-3 shadow-lg"
                 >
@@ -584,7 +568,7 @@ function MoviePage() {
         </section>
       )}
 
-      {filteredSimilar.length > 0 && (
+      {/* {filteredSimilar.length > 0 && (
         <div className="space-y-2">
           {(() => {
             const groups = new Map<string, typeof filteredSimilar>();
@@ -598,7 +582,7 @@ function MoviePage() {
             ));
           })()}
         </div>
-      )}
+      )} */}
 
       {filteredRecommendations.length > 0 && (
         <div className="space-y-2 pb-4">

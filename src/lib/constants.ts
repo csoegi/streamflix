@@ -1,6 +1,10 @@
 export const MAIN_VIDEO_URL = "";
 
-export const GRID_SIZE_TERM_LIST = 35;
+export const PAGED_LIST_SIZE = {
+  GRID: 35,
+  HIGHLIGHT: 10,
+} as const;
+export type PagedListSize = (typeof PAGED_LIST_SIZE)[keyof typeof PAGED_LIST_SIZE];
 
 export const REST_API_ENDPOINTS = {
   ACTORS: 'actors',
@@ -26,3 +30,9 @@ export const MOVIE_SORT_OPTIONS = {
 } as const;
 
 export type MovieSortOptions = (typeof MOVIE_SORT_OPTIONS)[keyof typeof MOVIE_SORT_OPTIONS];
+
+export const CACHE_TTL = {
+  TERMS: 1000 * 60 * 30, // 30 mins
+  MOVIES: 1000 * 60 * 10, // 10 mins
+} as const;
+export type CacheTTL = (typeof CACHE_TTL)[keyof typeof CACHE_TTL];
