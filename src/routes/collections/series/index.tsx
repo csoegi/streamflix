@@ -5,6 +5,7 @@ import { CinematicBanner } from "@/components/streamflix/CinematicBanner";
 import { TermListing } from "@/components/streamflix/TermListing";
 import { TermListingSkeleton } from "@/components/streamflix/TermListingSkeleton";
 import { serieTermsQueryOptions } from "@/lib/api/tmdb";
+import { SEO_SITE_NAME } from "@/lib/constants";
 
 export const Route = createFileRoute("/collections/series/")({
   shouldReload: true, // force reload to avoid cached data
@@ -14,7 +15,7 @@ export const Route = createFileRoute("/collections/series/")({
     ]);
     return { terms: series };
   },
-  head: () => ({ meta: [{ title: "Explore — Series" }] }),
+  head: () => ({ meta: [{  title: `${SEO_SITE_NAME} - Explore Series` }] }),
   pendingComponent: TermListingSkeleton,
   component: SeriesPage,
 });

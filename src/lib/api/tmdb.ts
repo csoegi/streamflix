@@ -5,15 +5,9 @@ import {
   REST_API_ENDPOINTS, 
   PAGED_LIST_SIZE, 
   MOVIE_SORT_OPTIONS,  
-  CACHE_TTL
+  CACHE_TTL,
+  EMPTY_MOVIE_LIST
 } from '@/lib/constants';
-
-const EMPTY_MOVIE_LIST: MovieList = {
-  page: 1,
-  total_pages: 0,
-  total_results: 0,
-  results: [],
-};
 
 export const fetchTrendingDay = createServerFn({ method: "POST" }).handler(async () => {
   return fetchMovies({page: 1, per_page: PAGED_LIST_SIZE.HIGHLIGHT, sort: MOVIE_SORT_OPTIONS.HOT} as any);
@@ -197,6 +191,24 @@ export const fetchMoviesByStudios = createServerFn({ method: "POST" })
     } as MovieList;
 });
 
+export const fetchSearch = createServerFn({ method: "POST" })
+  .validator(z.object({ 
+    q: z.string().min(1), 
+    page: z.number().default(1), 
+    per_page: z.number().default(PAGED_LIST_SIZE.GRID), 
+    sort: z.string().default(MOVIE_SORT_OPTIONS.NEW) 
+  }))
+  .handler(async ({ data }) => {
+    const { searchMovies, toMovie } = await import("./wp.server");
+    const movieData = await searchMovies({ q: data.q, page: String(data.page), per_page: String(PAGED_LIST_SIZE.GRID), sort: MOVIE_SORT_OPTIONS.NEW }).catch(() => EMPTY_MOVIE_LIST);
+    return {
+      page: movieData.page || 1,
+      total_pages: movieData.total_pages || 0,
+      total_results: movieData.total_results || 0,
+      results: (movieData.results || []).map((m: any) => toMovie(m))
+    } as MovieList;
+  });
+
 export const fetchUpcoming = createServerFn({ method: "POST" }).handler(async () => {
   const { getMovies, toMovie } = await import("./wp.server");
   const [page1, page2] = await Promise.all([
@@ -215,56 +227,79 @@ export const fetchUpcoming = createServerFn({ method: "POST" }).handler(async ()
 export const genreTermsQueryOptions = () => ({
   queryKey: ["terms_genre"],
   queryFn: () => fetchMovieGenres(),
-  //staleTime: Infinity, // To cache permanently
-  staleTime: CACHE_TTL.TERMS, // 30 mins
+  staleTime: CACHE_TTL.TERMS,
 });
 
 export const actorTermsQueryOptions = () => ({
   queryKey: ["terms_actor"],
   queryFn: () => fetchMovieActors(),
-  //staleTime: Infinity, // To cache permanently
-  staleTime: CACHE_TTL.TERMS, // 30 mins
+  staleTime: CACHE_TTL.TERMS,
 });
 
 export const studioTermsQueryOptions = () => ({
   queryKey: ["terms_studio"],
   queryFn: () => fetchMovieStudios(),
-  //staleTime: Infinity, // To cache permanently
-  staleTime: CACHE_TTL.TERMS, // 30 mins
+  staleTime: CACHE_TTL.TERMS, 
 });
 
 export const serieTermsQueryOptions = () => ({
   queryKey: ["terms_serie"],
   queryFn: () => fetchMovieCodes(),
-  //staleTime: Infinity, // To cache permanently
-  staleTime: CACHE_TTL.TERMS, // 30 mins
+  staleTime: CACHE_TTL.TERMS,
+});
+
+export const browseMoviesQueryOptions = (page: number, sort: string) => ({
+  queryKey: ["movies_browse_all", { page, sort }],
+  queryFn: () => fetchMovies({ data: { page, sort } }),
+  staleTime: CACHE_TTL.MOVIES, 
+});
+
+export const newMoviesQueryOptions = () => ({
+  queryKey: ["movies_highlights_new"],
+  queryFn: () => fetchMovies({ data: { page: 1,  per_page: PAGED_LIST_SIZE.HIGHLIGHT, sort: MOVIE_SORT_OPTIONS.NEW } }),
+  staleTime: CACHE_TTL.MOVIES, 
+});
+
+export const hotMoviesQueryOptions = () => ({
+  queryKey: ["movies_highlights_hot"],
+  queryFn: () => fetchMovies({ data: { page: 1,  per_page: PAGED_LIST_SIZE.HIGHLIGHT, sort: MOVIE_SORT_OPTIONS.HOT } }),
+  staleTime: CACHE_TTL.MOVIES, 
+});
+
+export const trendingMoviesQueryOptions = () => ({
+  queryKey: ["movies_highlights_trending"],
+  queryFn: () => fetchMovies({ data: { page: 1,  per_page: PAGED_LIST_SIZE.HIGHLIGHT, sort: MOVIE_SORT_OPTIONS.TRENDING } }),
+  staleTime: CACHE_TTL.MOVIES, 
+});
+
+export const popularMoviesQueryOptions = () => ({
+  queryKey: ["movies_highlights_popular"],
+  queryFn: () => fetchMovies({ data: { page: 1,  per_page: PAGED_LIST_SIZE.HIGHLIGHT, sort: MOVIE_SORT_OPTIONS.POPULAR } }),
+  staleTime: CACHE_TTL.MOVIES, 
 });
 
 export const moviesByGenreQueryOptions = (slug: string, page: number, sort: string) => ({
-  queryKey: ["movies_genre", { slug, page, sort }], // add params to cache key
+  queryKey: ["movies_genre", { slug, page, sort }], 
   queryFn: () => fetchMoviesByGenre({ data: { slug, page, sort } }),
-  staleTime: CACHE_TTL.MOVIES, // 10 minutes
-  gcTime: 1000 * 60 * 15, // add another 5 minutes before clearing from RAM
+  staleTime: CACHE_TTL.MOVIES, 
 });
 
 export const moviesByActorQueryOptions = (slug: string, page: number, sort: string) => ({
-  queryKey: ["movies_actor", { slug, page, sort }], // add params to cache key
+  queryKey: ["movies_actor", { slug, page, sort }], 
   queryFn: () => fetchMoviesByActors({ data: { slug, page, sort } }),
-  staleTime: CACHE_TTL.MOVIES, // 10 minutes
-  gcTime: 1000 * 60 * 15, // add another 5 minutes before clearing from RAM
+  staleTime: CACHE_TTL.MOVIES, 
 });
 
 export const moviesByStudioQueryOptions = (slug: string, page: number, sort: string) => ({
-  queryKey: ["movies_studio", { slug, page, sort }], // add params to cache key
+  queryKey: ["movies_studio", { slug, page, sort }], 
   queryFn: () => fetchMoviesByStudios({ data: { slug, page, sort } }),
-  staleTime: 0, // 10 minutes
+  staleTime: CACHE_TTL.MOVIES, 
 });
 
 export const moviesBySerieQueryOptions = (slug: string, page: number, sort: string) => ({
-  queryKey: ["movies_serie", { slug, page, sort }], // add params to cache key
+  queryKey: ["movies_serie", { slug, page, sort }], 
   queryFn: () => fetchMoviesByCodes({ data: { slug, page, sort } }),
-  staleTime: CACHE_TTL.MOVIES, // 10 minutes
-  gcTime: 1000 * 60 * 15, // add another 5 minutes before clearing from RAM
+  staleTime: CACHE_TTL.MOVIES, 
 });
 
 export type CalendarTitle = {
@@ -505,24 +540,6 @@ export const searchFiltered = createServerFn({ method: "POST" })
       ),
     );
     return dedupeMovies(pages.flatMap((r: any) => r.results || [])).map((m: any) => toMovie(m));
-  });
-
-export const suggestTitles = createServerFn({ method: "POST" })
-  .validator(z.object({ query: z.string().min(1) }))
-  .handler(async ({ data }) => {
-    const { searchMovies } = await import("./wp.server");
-    const res = await searchMovies({ query: data.query, page: "1" });
-    return (res.results || [])
-      .filter((m: any) => m.media_type === "movie" || m.media_type === "tv")
-      .slice(0, 8)
-      .map((m: any) => ({
-        id: m.media_type === "tv" ? `tv-${m.id}` : String(m.id),
-        title: m.title || m.name || "Untitled",
-        year: m.release_date || m.first_air_date ? Number((m.release_date || m.first_air_date).slice(0, 4)) : null,
-        poster: m.poster_path ? `https://image.tmdb.org/t/p/w185${m.poster_path}` : "",
-        mediaType: m.media_type,
-        genreIds: m.genre_ids || [],
-      }));
   });
 
 export const discoverByGenre = createServerFn({ method: "POST" })

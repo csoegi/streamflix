@@ -4,10 +4,10 @@ import { Navbar } from "@/components/streamflix/Navbar";
 import { Footer } from "@/components/streamflix/Footer";
 import { TermMovieListingSkeleton } from "@/components/streamflix/TermMovieListingSkeleton";
 import { CinematicHeroBanner } from "@/components/streamflix/CinematicHeroBanner";
+import { CinematicBanner } from "@/components/streamflix/CinematicBanner";
 import { TermMovieListing } from "@/components/streamflix/TermMovieListing";  
 import { genreTermsQueryOptions, moviesByGenreQueryOptions } from "@/lib/api/tmdb";
-import { MOVIE_SORT_OPTIONS } from '@/lib/constants';
-import { MovieList, WPTerm } from "@/lib/types";
+import { MOVIE_SORT_OPTIONS, SEO_SITE_NAME } from '@/lib/constants';
 
 const moviesSearchSchema = z.object({
   page: z.number().default(1).catch(1),
@@ -39,7 +39,7 @@ export const Route = createFileRoute("/collections/genres/$genreSlug")({
   },
   
   head: ({ loaderData }) => ({
-    meta: [{ title: `Genres - ${loaderData?.name}` }],
+    meta: [{ title: `${SEO_SITE_NAME} - Watch ${loaderData?.name} Genre.` }],
   }),
   pendingComponent: () => <TermMovieListingSkeleton chipCount={10} cardCount={14} />,
   component: ExploreGenresPage,
@@ -61,13 +61,21 @@ function ExploreGenresPage() {
   return (
     <div className="min-h-dvh bg-background">
       <Navbar />
-      {movies && movies.length > 0 && (
+      {movies && movies.length > 0 ? (
         <CinematicHeroBanner
           heroMovie={movies[0]}
           termName={name}
           totalResults={totalResults}
           vibeLabelSingular="genre"
         />
+      ) :(
+        <CinematicBanner
+            themeColor="emerald"
+            title="Pick a genre"
+            totalCount={0}
+            countLabelSingular="genre"
+            countLabelPlural="genres"
+          />
       )}
       <TermMovieListing
         movies={movies}

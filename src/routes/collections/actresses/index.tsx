@@ -5,6 +5,7 @@ import { CinematicBanner } from "@/components/streamflix/CinematicBanner";
 import { TermListing } from "@/components/streamflix/TermListing";
 import { TermListingSkeleton } from "@/components/streamflix/TermListingSkeleton";
 import { actorTermsQueryOptions } from "@/lib/api/tmdb";
+import { SEO_SITE_NAME } from "@/lib/constants";
 
 export const Route = createFileRoute("/collections/actresses/")({
   shouldReload: true, // force reload to avoid cached data
@@ -14,7 +15,7 @@ export const Route = createFileRoute("/collections/actresses/")({
     ]);
     return { terms: actors };
   },
-  head: () => ({ meta: [{ title: "Explore — Actresses" }] }),
+  head: () => ({ meta: [{ title: `${SEO_SITE_NAME} - Explore Actresses` }] }),
   pendingComponent: TermListingSkeleton,
   component: ActressesPage,
 });

@@ -14,7 +14,6 @@ import { Route as SearchRouteImport } from './routes/search'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as OfflineRouteImport } from './routes/offline'
 import { Route as MoviesRouteImport } from './routes/movies'
-import { Route as HomeRouteImport } from './routes/home'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -24,6 +23,7 @@ import { Route as AuthActionRouteImport } from './routes/auth/action'
 import { Route as ApiVerifyRecaptchaRouteImport } from './routes/api/verify-recaptcha'
 import { Route as ApiSendNotificationRouteImport } from './routes/api/send-notification'
 import { Route as ApiReleaseNotificationsCronRouteImport } from './routes/api/release-notifications-cron'
+import { Route as ApiRebuildCacheRouteImport } from './routes/api/rebuild-cache'
 import { Route as ApiProxyRouteImport } from './routes/api/proxy'
 import { Route as ApiClientIpRouteImport } from './routes/api/client-ip'
 import { Route as ApiArchiveRouteImport } from './routes/api/archive'
@@ -35,7 +35,6 @@ import { Route as AuthenticatedHistoryRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedForcePasswordRouteImport } from './routes/_authenticated/force-password'
 import { Route as AuthenticatedExploreRouteImport } from './routes/_authenticated/explore'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
-import { Route as AuthenticatedBrowseRouteImport } from './routes/_authenticated/browse'
 import { Route as CollectionsStudiosIndexRouteImport } from './routes/collections/studios/index'
 import { Route as CollectionsSeriesIndexRouteImport } from './routes/collections/series/index'
 import { Route as CollectionsGenresIndexRouteImport } from './routes/collections/genres/index'
@@ -69,11 +68,6 @@ const OfflineRoute = OfflineRouteImport.update({
 const MoviesRoute = MoviesRouteImport.update({
   id: '/movies',
   path: '/movies',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HomeRoute = HomeRouteImport.update({
-  id: '/home',
-  path: '/home',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -121,6 +115,11 @@ const ApiReleaseNotificationsCronRoute =
     path: '/api/release-notifications-cron',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiRebuildCacheRoute = ApiRebuildCacheRouteImport.update({
+  id: '/api/rebuild-cache',
+  path: '/api/rebuild-cache',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiProxyRoute = ApiProxyRouteImport.update({
   id: '/api/proxy',
   path: '/api/proxy',
@@ -177,11 +176,6 @@ const AuthenticatedCalendarRoute = AuthenticatedCalendarRouteImport.update({
   path: '/calendar',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedBrowseRoute = AuthenticatedBrowseRouteImport.update({
-  id: '/browse',
-  path: '/browse',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const CollectionsStudiosIndexRoute = CollectionsStudiosIndexRouteImport.update({
   id: '/collections/studios/',
   path: '/collections/studios/',
@@ -236,13 +230,11 @@ const AuthenticatedPersonIdRoute = AuthenticatedPersonIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
-  '/home': typeof HomeRoute
   '/movies': typeof MoviesRouteWithChildren
   '/offline': typeof OfflineRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/search': typeof SearchRoute
   '/tos': typeof TosRoute
-  '/browse': typeof AuthenticatedBrowseRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/explore': typeof AuthenticatedExploreRoute
   '/force-password': typeof AuthenticatedForcePasswordRoute
@@ -254,6 +246,7 @@ export interface FileRoutesByFullPath {
   '/api/archive': typeof ApiArchiveRoute
   '/api/client-ip': typeof ApiClientIpRoute
   '/api/proxy': typeof ApiProxyRoute
+  '/api/rebuild-cache': typeof ApiRebuildCacheRoute
   '/api/release-notifications-cron': typeof ApiReleaseNotificationsCronRoute
   '/api/send-notification': typeof ApiSendNotificationRoute
   '/api/verify-recaptcha': typeof ApiVerifyRecaptchaRoute
@@ -273,13 +266,11 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
-  '/home': typeof HomeRoute
   '/movies': typeof MoviesRouteWithChildren
   '/offline': typeof OfflineRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/search': typeof SearchRoute
   '/tos': typeof TosRoute
-  '/browse': typeof AuthenticatedBrowseRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/explore': typeof AuthenticatedExploreRoute
   '/force-password': typeof AuthenticatedForcePasswordRoute
@@ -291,6 +282,7 @@ export interface FileRoutesByTo {
   '/api/archive': typeof ApiArchiveRoute
   '/api/client-ip': typeof ApiClientIpRoute
   '/api/proxy': typeof ApiProxyRoute
+  '/api/rebuild-cache': typeof ApiRebuildCacheRoute
   '/api/release-notifications-cron': typeof ApiReleaseNotificationsCronRoute
   '/api/send-notification': typeof ApiSendNotificationRoute
   '/api/verify-recaptcha': typeof ApiVerifyRecaptchaRoute
@@ -312,13 +304,11 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
-  '/home': typeof HomeRoute
   '/movies': typeof MoviesRouteWithChildren
   '/offline': typeof OfflineRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/search': typeof SearchRoute
   '/tos': typeof TosRoute
-  '/_authenticated/browse': typeof AuthenticatedBrowseRoute
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
   '/_authenticated/explore': typeof AuthenticatedExploreRoute
   '/_authenticated/force-password': typeof AuthenticatedForcePasswordRoute
@@ -330,6 +320,7 @@ export interface FileRoutesById {
   '/api/archive': typeof ApiArchiveRoute
   '/api/client-ip': typeof ApiClientIpRoute
   '/api/proxy': typeof ApiProxyRoute
+  '/api/rebuild-cache': typeof ApiRebuildCacheRoute
   '/api/release-notifications-cron': typeof ApiReleaseNotificationsCronRoute
   '/api/send-notification': typeof ApiSendNotificationRoute
   '/api/verify-recaptcha': typeof ApiVerifyRecaptchaRoute
@@ -351,13 +342,11 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
-    | '/home'
     | '/movies'
     | '/offline'
     | '/privacy-policy'
     | '/search'
     | '/tos'
-    | '/browse'
     | '/calendar'
     | '/explore'
     | '/force-password'
@@ -369,6 +358,7 @@ export interface FileRouteTypes {
     | '/api/archive'
     | '/api/client-ip'
     | '/api/proxy'
+    | '/api/rebuild-cache'
     | '/api/release-notifications-cron'
     | '/api/send-notification'
     | '/api/verify-recaptcha'
@@ -388,13 +378,11 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
-    | '/home'
     | '/movies'
     | '/offline'
     | '/privacy-policy'
     | '/search'
     | '/tos'
-    | '/browse'
     | '/calendar'
     | '/explore'
     | '/force-password'
@@ -406,6 +394,7 @@ export interface FileRouteTypes {
     | '/api/archive'
     | '/api/client-ip'
     | '/api/proxy'
+    | '/api/rebuild-cache'
     | '/api/release-notifications-cron'
     | '/api/send-notification'
     | '/api/verify-recaptcha'
@@ -426,13 +415,11 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
-    | '/home'
     | '/movies'
     | '/offline'
     | '/privacy-policy'
     | '/search'
     | '/tos'
-    | '/_authenticated/browse'
     | '/_authenticated/calendar'
     | '/_authenticated/explore'
     | '/_authenticated/force-password'
@@ -444,6 +431,7 @@ export interface FileRouteTypes {
     | '/api/archive'
     | '/api/client-ip'
     | '/api/proxy'
+    | '/api/rebuild-cache'
     | '/api/release-notifications-cron'
     | '/api/send-notification'
     | '/api/verify-recaptcha'
@@ -465,7 +453,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
-  HomeRoute: typeof HomeRoute
   MoviesRoute: typeof MoviesRouteWithChildren
   OfflineRoute: typeof OfflineRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
@@ -474,6 +461,7 @@ export interface RootRouteChildren {
   ApiArchiveRoute: typeof ApiArchiveRoute
   ApiClientIpRoute: typeof ApiClientIpRoute
   ApiProxyRoute: typeof ApiProxyRoute
+  ApiRebuildCacheRoute: typeof ApiRebuildCacheRoute
   ApiReleaseNotificationsCronRoute: typeof ApiReleaseNotificationsCronRoute
   ApiSendNotificationRoute: typeof ApiSendNotificationRoute
   ApiVerifyRecaptchaRoute: typeof ApiVerifyRecaptchaRoute
@@ -523,13 +511,6 @@ declare module '@tanstack/react-router' {
       path: '/movies'
       fullPath: '/movies'
       preLoaderRoute: typeof MoviesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/home': {
-      id: '/home'
-      path: '/home'
-      fullPath: '/home'
-      preLoaderRoute: typeof HomeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -593,6 +574,13 @@ declare module '@tanstack/react-router' {
       path: '/api/release-notifications-cron'
       fullPath: '/api/release-notifications-cron'
       preLoaderRoute: typeof ApiReleaseNotificationsCronRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/rebuild-cache': {
+      id: '/api/rebuild-cache'
+      path: '/api/rebuild-cache'
+      fullPath: '/api/rebuild-cache'
+      preLoaderRoute: typeof ApiRebuildCacheRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/proxy': {
@@ -672,13 +660,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCalendarRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/browse': {
-      id: '/_authenticated/browse'
-      path: '/browse'
-      fullPath: '/browse'
-      preLoaderRoute: typeof AuthenticatedBrowseRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/collections/studios/': {
       id: '/collections/studios/'
       path: '/collections/studios'
@@ -746,7 +727,6 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedBrowseRoute: typeof AuthenticatedBrowseRoute
   AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
   AuthenticatedExploreRoute: typeof AuthenticatedExploreRoute
   AuthenticatedForcePasswordRoute: typeof AuthenticatedForcePasswordRoute
@@ -759,7 +739,6 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedBrowseRoute: AuthenticatedBrowseRoute,
   AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
   AuthenticatedExploreRoute: AuthenticatedExploreRoute,
   AuthenticatedForcePasswordRoute: AuthenticatedForcePasswordRoute,
@@ -799,7 +778,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
-  HomeRoute: HomeRoute,
   MoviesRoute: MoviesRouteWithChildren,
   OfflineRoute: OfflineRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
@@ -808,6 +786,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiArchiveRoute: ApiArchiveRoute,
   ApiClientIpRoute: ApiClientIpRoute,
   ApiProxyRoute: ApiProxyRoute,
+  ApiRebuildCacheRoute: ApiRebuildCacheRoute,
   ApiReleaseNotificationsCronRoute: ApiReleaseNotificationsCronRoute,
   ApiSendNotificationRoute: ApiSendNotificationRoute,
   ApiVerifyRecaptchaRoute: ApiVerifyRecaptchaRoute,

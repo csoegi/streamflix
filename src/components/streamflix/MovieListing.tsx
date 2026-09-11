@@ -4,31 +4,19 @@ import { MovieCard } from "@/components/streamflix/MovieCard";
 import type { Movie } from "@/lib/types";
 import { MovieSortOptions  } from '@/lib/constants';
 
-export interface NavigationChip {
-  term_id: number;
-  name: string;
-  slug: string;
-}
-
-interface TermMovieListingProps {
+interface MovieListingProps {
   movies: Movie[];
-  top10Terms: NavigationChip[];
-  activeTermSlug: string;
   activePage: number;
+  activeSort: string;  
   totalPages: number;
-  activeSort: string;
-  paramKeyName: "genreSlug" | "actorSlug" | "studioSlug" | "codeSlug";
 }
 
-export function TermMovieListing({
+export function MovieListing({
   movies,
-  top10Terms,
-  activeTermSlug,
   activePage,
-  totalPages,
   activeSort,
-  paramKeyName,
-}: TermMovieListingProps) {
+  totalPages,
+}: MovieListingProps) {
   const navigate = useNavigate();
 
   // Handle pagination search mutations query segments parameter changes
@@ -51,85 +39,13 @@ export function TermMovieListing({
     <div className="w-full px-4 pb-16 sm:px-6 lg:px-8"> 
       
       {/* 🛠️ Top Controls Row: Navigation Chips + Sorting Selector */}
-      <div className="mt-8 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between border-b border-zinc-800 pb-6">
-        
-        {/* Dynamic Navigation Chips Selection Panel row */}
-        <div className="flex flex-wrap gap-2 max-w-8xl">
-          {top10Terms.map((term) => {
-            const currentSlug = term.slug || term.name.toLowerCase().trim().replace(/\s+/g, "-");
-            const isActive = currentSlug === activeTermSlug;
-            if (paramKeyName === "genreSlug") {
-              return (
-                <Link
-                  key={term.term_id}
-                  to="/collections/genres/$genreSlug"
-                  params={{ genreSlug: currentSlug }}
-                  search={true} // forward seearch param
-                  className={`rounded-full border px-4 py-2 text-sm transition font-medium shadow-sm ${
-                  isActive
-                    ? "border-red-500 bg-red-600 text-white font-semibold scale-105"
-                    : "border-zinc-800 text-neutral-400 bg-zinc-900/30 hover:border-red-500 hover:text-white hover:bg-zinc-800/40"
-                  }`}
-                >
-                  {term.name}
-                </Link>
-              );
-            }
-            if (paramKeyName === "actorSlug") {
-              return (
-                <Link
-                  key={term.term_id}
-                  to="/collections/actresses/$actorSlug"
-                  params={{ actorSlug: currentSlug }}
-                  search={true} // forward seearch param
-                  className={`rounded-full border px-4 py-2 text-sm transition font-medium shadow-sm ${
-                  isActive
-                    ? "border-red-500 bg-red-600 text-white font-semibold scale-105"
-                    : "border-zinc-800 text-neutral-400 bg-zinc-900/30 hover:border-red-500 hover:text-white hover:bg-zinc-800/40"
-                  }`}
-                >
-                  {term.name}
-                </Link>
-              );
-            }
-            if (paramKeyName === "studioSlug") {
-              return (
-                <Link
-                  key={term.term_id}
-                  to="/collections/studios/$studioSlug"
-                  params={{ studioSlug: currentSlug }}
-                  search={true} // forward seearch param
-                  className={`rounded-full border px-4 py-2 text-sm transition font-medium shadow-sm ${
-                  isActive
-                    ? "border-red-500 bg-red-600 text-white font-semibold scale-105"
-                    : "border-zinc-800 text-neutral-400 bg-zinc-900/30 hover:border-red-500 hover:text-white hover:bg-zinc-800/40"
-                  }`}
-                >
-                  {term.name}
-                </Link>
-              );
-            }
-            // Fallback
-            return (
-              <Link
-                  key={term.term_id}
-                  to="/collections/series/$codeSlug"
-                  params={{ codeSlug: currentSlug }}
-                  search={true} // forward seearch param
-                  className={`rounded-full border px-4 py-2 text-sm transition font-medium shadow-sm ${
-                  isActive
-                    ? "border-red-500 bg-red-600 text-white font-semibold scale-105"
-                    : "border-zinc-800 text-neutral-400 bg-zinc-900/30 hover:border-red-500 hover:text-white hover:bg-zinc-800/40"
-                  }`}
-                >
-                  {term.name.toUpperCase()}
-                </Link>
-            );
-          })}
-        </div>
-
+      <div className="mt-8 flex items-center justify-between border-b border-zinc-800 pb-6 w-full">
+        <h1 className="text-2xl font-bold text-zinc-100 tracking-tight">
+          Browse Movies
+        </h1>       
+                
         {/* 💡 Sorting Selector Element */}
-        <div className="flex items-center gap-2 lg:shrink-0 min-w-[160px]">
+        <div className="flex items-center gap-2 min-w-[160px] justify-end ml-auto">
           <div className="relative w-full">
             <select
               value={activeSort}

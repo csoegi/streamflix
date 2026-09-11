@@ -1,11 +1,10 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Link } from "@tanstack/react-router";
 import { Play, Info, Calendar, Clock, Star } from "lucide-react";
-import type { Movie } from "@/lib/types";
 import { AgeRatingBadge } from "./AgeRatingBadge";
-import { buildTitleLogoUrl } from "@/lib/title-logo";
+import type { Movie } from "@/lib/types";
 
-export function HeroBanner({ slides }: { slides: Movie[] }) {
+export function CinematicHeroCarousel({ slides }: { slides: Movie[] }) {
   const [i, setI] = useState(0);
   const touchStart = useRef<number | null>(null);
   const touchDelta = useRef(0);
@@ -68,7 +67,8 @@ export function HeroBanner({ slides }: { slides: Movie[] }) {
       ? `${s.description.slice(0, MAX_DESC_CHARS - 3).trimEnd()}...`
       : s.description;
 
-  const titleLogoUrl = s.poster || s.backdrop;
+  //const titleLogoUrl = s.poster || s.backdrop;
+  const titleLogoUrl = null; // Don't display small poster
 
   return (
     <section
@@ -103,7 +103,7 @@ export function HeroBanner({ slides }: { slides: Movie[] }) {
                   loading={idx === i ? "eager" : "lazy"}
                   decoding="async"
                   fetchPriority={idx === i ? "high" : "low"}
-                  className={`size-full object-cover blur-lg opacity-70 brightness-70 ${
+                  className={`size-full object-cover blur-sm opacity-70 brightness-80 ${
                     isCurrent ? "animate-ken-burns" : ""
                   }`}
                 />
@@ -134,10 +134,7 @@ export function HeroBanner({ slides }: { slides: Movie[] }) {
 
       {/* Dynamic Text Information Overlay Content Box */}
       <div className="relative z-10 flex h-full items-end justify-center px-4 pb-8 pt-10 text-center sm:px-8 md:items-end md:justify-start">
-        <div
-          key={s.id}
-          className="animate-fade-in w-full max-w-none space-y-3 text-center md:max-w-3xl md:text-left"
-        >
+        <div key={s.id} className="animate-fade-in w-full max-w-none space-y-3 text-center md:max-w-3xl md:text-left">
           {titleLogoUrl ? (
             <img
               src={titleLogoUrl}

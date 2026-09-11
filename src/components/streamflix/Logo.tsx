@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 export function Logo({ className = "" }: { className?: string }) {
   return (
     <Link
-      to="/browse"
+      to="/"
       className={`inline-flex items-center gap-2.5 ${className}`}
       aria-label="StreamFlix browse"
     >

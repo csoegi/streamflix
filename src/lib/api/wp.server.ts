@@ -1,6 +1,7 @@
 import type { Movie, MovieList, WPTerm } from "@/lib/types";
 import { getServerConfig } from "@/lib/config.server";
-import { MOVIE_SORT_OPTIONS, PAGED_LIST_SIZE } from "@/lib/constants";
+import { cacheManager } from "@/lib/cache-manager"; 
+import { MOVIE_SORT_OPTIONS, PAGED_LIST_SIZE, EMPTY_MOVIE_LIST } from "@/lib/constants";
 
 // Keep TMDB references intact for image layout lookups and asset fallback scripts
 const TMDB_BASE = "https://api.themoviedb.org/3";
@@ -26,99 +27,64 @@ export interface WatchProvidersResult {
   }>;
 }
 
-interface CacheEntry {
-  data: unknown;
-  expiry: number;
-}
-
-// Instantiate two distinct cache pools
-const METADATA_CACHE = new Map<string, CacheEntry>();   // For light items (IDs, terms, slugs)
-const GRID_CACHE = new Map<string, CacheEntry>();       // For heavy items (large pages, list arrays)
-
-// Configuration Thresholds
-const DEFAULT_TTL = 30 * 60 * 1000;                     // 30 minutes
-const METADATA_MAX_SIZE = 5000;                         // Highly beneficial, virtually no RAM footprint
-const GRID_MAX_SIZE = 1000;                             // Capped to protect server memory heap
-
 /**
- * Get item from cache (Default: metadata)
+ * ⚡Get Movies Grid list with pagination and sort param.
+ * ⚡Cache Strategy: Grid Cache - Stale-While-Revalidate (SWR)
+ * @param params 
+ * @returns 
  */
-export function cacheGet<T>(key: string, type: "metadata" | "grid" = "metadata"): T | undefined {
-  const pool = type === "grid" ? GRID_CACHE : METADATA_CACHE;
-  const entry = pool.get(key);
-  
-  if (!entry) return undefined;
-  
-  // Evict immediately if current epoch passes expiry timestamp
-  if (Date.now() > entry.expiry) {
-    pool.delete(key);
-    return undefined;
-  }
-  
-  return entry.data as T;
-}
-
-/**
- * Commits item to cache with FIFO eviction rules based on cache size (Default: metadata)
- */
-export function cacheSet(key: string, data: unknown, type: "metadata" | "grid" = "metadata", ttl?: number): void {
-  const pool = type === "grid" ? GRID_CACHE : METADATA_CACHE;
-  const limit = type === "grid" ? GRID_MAX_SIZE : METADATA_MAX_SIZE;
-  const activeTTL = ttl !== undefined ? ttl : DEFAULT_TTL;
-
-  // Enforce structural pool bounds checks (FIFO Eviction)
-  if (pool.size >= limit) {
-    const oldest = pool.keys().next().value;
-    if (oldest !== undefined) pool.delete(oldest);
-  }
-
-  // Refresh key position order if it already exists
-  if (pool.has(key)) {
-    pool.delete(key);
-  }
-
-  pool.set(key, { data, expiry: Date.now() + activeTTL });
-}
-
 export async function getMovies(params: Record<string, string> = {}): Promise<any> {
     const page = params.page ? parseInt(params.page) : 1;
-    const perPage = params.per_page ? parseInt(params.per_page) : 35;
-    const sort = params.sort || MOVIE_SORT_OPTIONS.NEW;
-    const cacheKey = `movies_${page}_${perPage}_{$sort}`;
-    const cached = cacheGet<any>(cacheKey, "grid");
-    if (cached) return cached;
+    const perPage = params.per_page ? parseInt(params.per_page) : PAGED_LIST_SIZE.GRID;
+    const sort = params.sort || MOVIE_SORT_OPTIONS.NEW;    
+    const cacheKey = `movies_${page}_${perPage}_${sort}`; 
+    const cached = cacheManager.getGrid(cacheKey);
 
-    try {
-        const res = await fetch(`${FILMJEPANG_API_BASE_URL}?page=${page}&per_page=${perPage}&sort=${sort}`, {
-            method: "GET",
-            headers: {
-                "Authorization": `Bearer ${FILMJEPANG_API_KEY}`,
-                "Content-Type": "application/json"
-            }
-        });
-        
-        if (!res.ok) throw new Error(`HTTP Code ${res.status}`);
+    const revalidate = async () => {
+        try {
+            const res = await fetch(`${FILMJEPANG_API_BASE_URL}?page=${page}&per_page=${perPage}&sort=${sort}`, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${FILMJEPANG_API_KEY}`,
+                    "Content-Type": "application/json"
+                }
+            });
+            
+            if (!res.ok) throw new Error(`HTTP Code ${res.status}`);
 
-        const data = await res.json();
-        cacheSet(cacheKey, data, "grid");
+            const data = await res.json();
+            const formattedData = {
+                page: data.page,
+                total_results: data.total_results || 0,
+                total_pages: data.total_pages || 1,
+                results: data.results || [] 
+            };
 
-        return {
-            page: data.page,
-            total_results: data.total_results || 0,
-            total_pages: data.total_pages || 1,
-            results: data.results || [] 
-        };
-    } catch (err) {
-        console.error("[API ERROR] [wp.server->getMovies]: ", err);
+            cacheManager.setGrid(cacheKey, formattedData);
+            return formattedData;
+        } catch (err) {
+            console.error("[API BACKGROUND ERROR] [wp.server->getMovies]: ", err);
+        }
+    };
+
+    if (cached) {
+        revalidate(); // Kickoff silent background cache update (Do not await!)
+        return cached; // Return cached payload response immediately
     }
-    
-    return { page: 1, total_results: 0, total_pages: 0, results: [] };
+
+    return (await revalidate()) || EMPTY_MOVIE_LIST;
 }
 
+/**
+ *⚡Get single movie by id
+ *⚡Cache Strategy: Metadata Cache - Strict TTL + FIFO Eviction
+ * @param id 
+ * @returns 
+ */
 export async function getMovieById(id: string): Promise<any> {
     try {
         const cacheKey = `meta_movie_${id}`;
-        const cached = cacheGet<Movie>(cacheKey); 
+        const cached = cacheManager.getMetadata<Movie>(cacheKey); 
         if (cached) return cached;
 
         const res = await fetch(`${FILMJEPANG_API_BASE_URL}/${id}`, {
@@ -130,8 +96,9 @@ export async function getMovieById(id: string): Promise<any> {
         });
 
         if (!res.ok) throw new Error(`HTTP Error ${res.status}`);        
-        var data = await res.json();
-        cacheSet(cacheKey, data);
+        const data = await res.json();
+        
+        cacheManager.setMetadata(cacheKey, data);
         return data;
     } 
     catch (err) {
@@ -140,27 +107,30 @@ export async function getMovieById(id: string): Promise<any> {
     return null;
 }
 
+/**
+ *⚡Get taxonomy terms
+ *⚡Cache Strategy: Metadata Cache - Strict TTL + FIFO Eviction
+ * @param taxonomy 
+ * @returns 
+ */
 export async function getTerms(taxonomy: string): Promise<any[]> {
     try {
-         // FIX: Wrap the cacheKey in backticks so ${taxonomy} resolves dynamically
         const cacheKey = `meta_terms_${taxonomy}`;
-        
-        const cached = cacheGet<WPTerm[]>(cacheKey); 
+        const cached = cacheManager.getMetadata<WPTerm[]>(cacheKey); 
         if (cached) return cached;
 
         const res = await fetch(`${FILMJEPANG_API_BASE_URL}/${taxonomy}`, {
             method: "GET",
             headers: {
-            "Authorization": `Bearer ${FILMJEPANG_API_KEY}`,
-            "Content-Type": "application/json"
+                "Authorization": `Bearer ${FILMJEPANG_API_KEY}`,
+                "Content-Type": "application/json"
             }
         });
 
         if (!res.ok) throw new Error(`HTTP Code: ${res.status}`);
-        var data = await res.json();
+        const data = await res.json();
         
-        cacheSet(cacheKey, data);
-        
+        cacheManager.setMetadata(cacheKey, data);
         return data;
     } 
     catch (err) {
@@ -169,68 +139,101 @@ export async function getTerms(taxonomy: string): Promise<any[]> {
     return [];
 }
 
+/**
+ *⚡Get movie list by terms with pagination and sort param
+ *⚡Cache Strategy: Grid Cache - Stale-While-Revalidate (SWR)
+ * @param taxonomy 
+ * @param term 
+ * @param params 
+ * @returns 
+ */
 export async function getMoviesByTerm(taxonomy: string, term: string, params: Record<string, string> = {}): Promise<any> {
-    try {
-        const page = parseInt(params.page ?? "1");
-        const perPage = parseInt(params.per_page ?? "") || PAGED_LIST_SIZE.GRID;
-        const sort = params.sort || MOVIE_SORT_OPTIONS.NEW;
-        const cacheKey = `${taxonomy}_${term}_${page}_${perPage}_${sort}`;
-        const cached = cacheGet<any>(cacheKey, "grid");
-        if (cached) return cached;
+    const page = parseInt(params.page ?? "1");
+    const perPage = parseInt(params.per_page ?? "") || PAGED_LIST_SIZE.GRID;
+    const sort = params.sort || MOVIE_SORT_OPTIONS.NEW;
+    const cacheKey = `${taxonomy}_${term}_${page}_${perPage}_${sort}`;
+    const cached = cacheManager.getGrid(cacheKey);
 
-        const res = await fetch(`${FILMJEPANG_API_BASE_URL}/${taxonomy}/${term}?page=${page}&per_page=${perPage}&sort=${sort}`, {
-            method: "GET",
-            headers: {
-            "Authorization": `Bearer ${FILMJEPANG_API_KEY}`,
-            "Content-Type": "application/json"
-            }
-        });
-        if (!res.ok) throw new Error(`HTTP Code ${res.status}`);
-      
-        const data = await res.json();
-        cacheSet(cacheKey, data, "grid");
-        return {
-            page: data.page,
-            total_results: data.total_results || 0,
-            total_pages: data.total_pages || 1,
-            results: data.results || [] 
-        };
-    } 
-    catch (err) {
-      console.error("[API ERROR] [wp.server->getMoviesByGenre]: ", err);
+    const revalidate = async () => {
+        try {
+            const res = await fetch(`${FILMJEPANG_API_BASE_URL}/${taxonomy}/${term}?page=${page}&per_page=${perPage}&sort=${sort}`, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${FILMJEPANG_API_KEY}`,
+                    "Content-Type": "application/json"
+                }
+            });
+            if (!res.ok) throw new Error(`HTTP Code ${res.status}`);
+          
+            const data = await res.json();
+            const formattedData = {
+                page: data.page,
+                total_results: data.total_results || 0,
+                total_pages: data.total_pages || 1,
+                results: data.results || [] 
+            };
+
+            cacheManager.setGrid(cacheKey, formattedData);
+            return formattedData;
+        } catch (err) {
+            console.error("[API ERROR] [wp.server->getMoviesByTerm]: ", err);
+        }
+    };
+
+    if (cached) {
+        revalidate(); // Kickoff silent background cache update (Do not await!)
+        return cached; // Deliver cached payload response instantly
     }
-    return { page: 1, total_results: 0, total_pages: 0, results: [] };
+
+    return (await revalidate()) || EMPTY_MOVIE_LIST;
 }
 
+/**
+ * Search movies
+ * @param params 
+ * @returns 
+ */
 export async function searchMovies(params: Record<string, string> = {}): Promise<any> {
-    const query = params.q ? parseInt(params.q) : "";
+    const query = params.q;
     const page = params.page ? parseInt(params.page) : 1;
-    const perPage = params.per_page ? parseInt(params.per_page) : 35;
+    const perPage = params.per_page ? parseInt(params.per_page) : PAGED_LIST_SIZE.GRID;
+    const sort = params.sort || MOVIE_SORT_OPTIONS.NEW;
+    const cacheKey = `search_${query}_${page}_${perPage}_${sort}`;
+    const cached = cacheManager.getGrid(cacheKey);
 
-    try {
-        const res = await fetch(`${FILMJEPANG_API_BASE_URL}/search?q=${query}page=${page}&per_page=${perPage}`, {
-            method: "GET",
-            headers: {
-                "Authorization": `Bearer ${FILMJEPANG_API_KEY}`,
-                "Content-Type": "application/json"
-            }
-        });
-        
-        if (!res.ok) throw new Error(`HTTP Code ${res.status}`);
+    const revalidate = async () => {
+        try {
+            const res = await fetch(`${FILMJEPANG_API_BASE_URL}/search?q=${query}&page=${page}&per_page=${perPage}&sort=${sort}`, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${FILMJEPANG_API_KEY}`,
+                    "Content-Type": "application/json"
+                }
+            });
+            
+            if (!res.ok) throw new Error(`HTTP Code ${res.status}`);
 
-        const data = await res.json();
+            const data = await res.json();
+            const formattedData = {
+                page: data.page,
+                total_results: data.total_results || 0,
+                total_pages: data.total_pages || 1,
+                results: data.results || [] 
+            };
 
-        return {
-            page: data.page,
-            total_results: data.total_results || 0,
-            total_pages: data.total_pages || 1,
-            results: data.results || [] 
-        };
-    } catch (err) {
-        console.error("[API ERROR] [wp.server->searchMovies]: ", err);
+            cacheManager.setGrid(cacheKey, formattedData);
+            return formattedData;
+        } catch (err) {
+            console.error("[API BACKGROUND ERROR] [wp.server->searchMovies]: ", err);
+        }
+    };
+
+    if (cached) {
+        revalidate(); // Kickoff silent background cache update (Do not await!)
+        return cached; // Deliver instant cached payload response
     }
     
-    return { page: 1, total_results: 0, total_pages: 0, results: [] };
+    return (await revalidate()) || EMPTY_MOVIE_LIST;
 }
 
 export function toMovie(m: any): Movie {

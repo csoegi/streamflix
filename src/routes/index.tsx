@@ -1,382 +1,191 @@
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
-import { useState, useRef } from "react";
-import { ChevronRight, Play, ChevronDown, Mail, Instagram, Tv, Smartphone, Monitor, Shield, Zap, Globe, ChevronLeft, Download, Github } from "lucide-react";
-import { Logo } from "@/components/streamflix/Logo";
-import { ContactEmail } from "@/components/streamflix/ContactEmail";
-import { isInApp } from "@/lib/app-downloads";
-import { getMovies, toMovie } from "@/lib/api/wp.server";
+import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { ArrowUp, ChevronLeft, ChevronRight } from "lucide-react";
+import { Navbar } from "@/components/streamflix/Navbar";
+import { CinematicHeroCarousel } from "@/components/streamflix/CinematicHeroCarousel";
+import { Row } from "@/components/streamflix/Row";
+import { MovieCard } from "@/components/streamflix/MovieCard";
+import { Footer } from "@/components/streamflix/Footer";
+import { BrowseSkeleton } from "@/components/streamflix/BrowseSkeleton";
+import { ReleaseReminderBanner } from "@/components/streamflix/ReleaseReminderBanner";
+import { SEO_SITE_NAME } from "@/lib/constants";
+import { newMoviesQueryOptions, hotMoviesQueryOptions, trendingMoviesQueryOptions, popularMoviesQueryOptions } from "@/lib/api/tmdb";
 import type { Movie } from "@/lib/types";
-import heroImg from "@/assets/landing.jpg";
 
 export const Route = createFileRoute("/")({
-  beforeLoad: async () => {
-    if (typeof window === "undefined") return;
-    // Instant redirect from localStorage cache — no flash
-    try {
-      if (localStorage.getItem("sf:auth") === "1") {
-        throw redirect({ to: "/profiles" });
-      }
-    } catch (e) {
-      if (e && typeof e === "object" && "isRedirect" in e) throw e;
-    }
-    // Fallback: check Firebase (e.g. first visit or cache cleared)
-    const { auth } = await import("@/lib/firebase");
-    const { onAuthStateChanged } = await import("firebase/auth");
-    const user = await new Promise<unknown>((resolve) => {
-      const unsub = onAuthStateChanged(auth, (user) => {
-        unsub();
-        resolve(user);
-      });
-    });
-    if (user) {
-      try { localStorage.setItem("sf:auth", "1"); } catch {}
-      throw redirect({ to: "/profiles" });
-    }
+  loader: async ({ context: { queryClient } }) => {
+    const [newMovies, hotMovies, trendingMovies, popularMovies] = await Promise.all([
+        queryClient.ensureQueryData(newMoviesQueryOptions()),
+        queryClient.ensureQueryData(hotMoviesQueryOptions()),
+        queryClient.ensureQueryData(trendingMoviesQueryOptions()),
+        queryClient.ensureQueryData(popularMoviesQueryOptions()),
+      ]);
+    
+      return {
+        heroSlides: hotMovies?.results.slice(0, 3),
+        top10Today: hotMovies?.results,
+        top10TrendingWeek: trendingMovies?.results,
+        rows: [
+          { title: "New Releases", items: newMovies?.results },
+          { title: "Most Viewed", items: popularMovies?.results },
+        ],
+      };
   },
-  loader: async () => {
-    const data = await getMovies({ page: "1", per_page: "10" });
-    return (data.results || []).slice(0, 10).map(toMovie);
-  },
-  head: () => ({
-    meta: [
-      { title: "StreamFlix — Unlimited movies, TV shows, and more" },
-      {
-        name: "description",
-        content: "StreamFlix — Free streaming service. Unlimited movies, TV shows, and more.",
-      },
-      { property: "og:title", content: "StreamFlix" },
-      {
-        property: "og:description",
-        content: "Unlimited movies, TV shows, and more — anywhere, anytime.",
-      },
-    ],
-  }),
-  component: Landing,
+  head: () => ({ meta: [{ title: `${SEO_SITE_NAME} - Watch Free JAV & Japanese AV Movie Collections in HD` }] }),
+  component: HomePage,
+  pendingComponent: () => <BrowseSkeleton isHomePage={true}/>,
 });
 
-const faqs = [
-  [
-    "Is StreamFlix really free?",
-    "Yes, 100% free. No subscriptions, no hidden fees, no credit card needed. Just sign up and start watching instantly.",
-  ],
-  [
-    "Can I watch on my phone or TV?",
-    "Absolutely. StreamFlix works on any device with an internet connection — phones, tablets, laptops, smart TVs, gaming consoles, and more.",
-  ],
-  [
-    "Do I need to create an account?",
-    "Yes, you'll need a free account to personalize your experience, pick up where you left off, and create watchlists. It takes seconds to sign up.",
-  ],
-  [
-    "How is StreamFlix free?",
-    "StreamFlix is supported by our community and partners. We believe entertainment should be accessible to everyone, so we keep it free with no strings attached.",
-  ],
-  [
-    "What kind of content is available?",
-    "From blockbuster movies and binge-worthy TV shows to anime, documentaries, and original content — there's something for everyone.",
-  ],
-];
+function HomePage() {
+  const data = Route.useLoaderData();
+  const heroSlides: Movie[] = data.heroSlides;  
+  const top10Today: Movie[] = data.top10Today;
+  const top10TrendingWeek: Movie[] = data.top10TrendingWeek;
+  const rows: { title: string; items: Movie[] }[] = data.rows;
+  const [top10Ref, setTop10Ref] = useState<HTMLDivElement | null>(null);
+  const [top10Scroll, setTop10Scroll] = useState({ left: 0, viewport: 0, width: 0 });
+  const [trendingWeekRef, setTrendingWeekRef] = useState<HTMLDivElement | null>(null);
+  const [trendingWeekScroll, setTrendingWeekScroll] = useState({ left: 0, viewport: 0, width: 0 });
 
-function Landing() {
-  const trending: Movie[] = Route.useLoaderData();
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
-
-  const checkScroll = () => {
-    const el = scrollContainerRef.current;
+  useEffect(() => {
+    const el = top10Ref;
     if (!el) return;
-    setCanScrollLeft(el.scrollLeft > 4);
-    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+    const measure = () =>
+      setTop10Scroll({ left: el.scrollLeft, viewport: el.clientWidth, width: el.scrollWidth });
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    const onScroll = () =>
+      setTop10Scroll({ left: el.scrollLeft, viewport: el.clientWidth, width: el.scrollWidth });
+    el.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", measure);
+    return () => {
+      ro.disconnect();
+      el.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", measure);
+    };
+  }, [top10Ref, top10Today.length]);
+
+  useEffect(() => {
+    const el = trendingWeekRef;
+    if (!el) return;
+    const measure = () =>
+      setTrendingWeekScroll({ left: el.scrollLeft, viewport: el.clientWidth, width: el.scrollWidth });
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    const onScroll = () =>
+      setTrendingWeekScroll({ left: el.scrollLeft, viewport: el.clientWidth, width: el.scrollWidth });
+    el.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", measure);
+    return () => {
+      ro.disconnect();
+      el.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", measure);
+    };
+  }, [trendingWeekRef, top10TrendingWeek.length]);
+
+  const scrollTop10 = (dir: 1 | -1) => {
+    if (!top10Ref) return;
+    top10Ref.scrollBy({ left: dir * (top10Ref.clientWidth * 0.9), behavior: "smooth" });
   };
 
-  const scrollBy = (dir: number) => {
-    const el = scrollContainerRef.current;
-    if (!el) return;
-    el.scrollBy({ left: dir * 300, behavior: "smooth" });
+  const scrollTrendingWeek = (dir: 1 | -1) => {
+    if (!trendingWeekRef) return;
+    trendingWeekRef.scrollBy({ left: dir * (trendingWeekRef.clientWidth * 0.9), behavior: "smooth" });
   };
 
   return (
-    <main className="min-h-dvh bg-background text-foreground">
-      {/* Hero */}
-      <section className="relative min-h-[50vh] sm:min-h-[88vh] overflow-hidden">
-        <img src={heroImg} alt="" className="absolute inset-0 size-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-background" />
-        <div className="relative z-10">
-          <header className="flex items-center justify-between px-4 sm:px-12 py-5">
-            <Logo className="[&>span]:text-3xl [&>span]:sm:text-5xl" />
-            <div className="flex items-center gap-3">
-              <a
-                href="https://github.com/csoegi/streamflix"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-foreground transition-colors"
-                title="GitHub"
-              >
-                <Github className="size-5" />
-              </a>
-              <Link
-                to="/auth"
-                className="rounded-md bg-primary px-4 sm:px-6 py-2 sm:py-2.5 text-sm sm:text-base font-semibold text-primary-foreground hover:bg-primary/90 mr-0 sm:mr-12"
-              >
-                Sign In
-              </Link>
-            </div>
-          </header>
-
-          <div className="mx-auto mt-24 max-w-3xl px-4 text-center sm:mt-36">
-            <h1 className="text-shadow-hero text-5xl font-bold tracking-tight sm:text-7xl">
-              Unlimited movies, TV shows, and more.
-            </h1>
-            <p className="text-shadow-hero mt-6 text-xl sm:text-3xl font-medium">
-              Completely free. No subscriptions, no catches.
-            </p>
-            <div className="mt-10 flex items-center justify-center gap-6 flex-wrap">
-              <Link
-                to="/auth"
-                className="inline-flex items-center gap-2 rounded-md bg-primary px-6 py-3 text-base font-semibold text-primary-foreground hover:bg-primary/90"
-              >
-                <Play className="size-5 fill-current" /> Start Watching
-              </Link>
-              {!isInApp() && (
-                <a
-                  href="https://github.com/csoegi/streamflix/releases"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-md border border-primary/40 bg-primary/10 px-6 py-3 text-base font-semibold text-primary hover:bg-primary/20 transition-colors"
+    <div className="min-h-dvh bg-background">
+      <Navbar />
+      <CinematicHeroCarousel slides={heroSlides} />
+      <div className="relative z-10 mt-0 md:mt-12 space-y-6 md:space-y-12">
+        {top10Today.length > 0 && (
+          <section className="space-y-4 py-4">
+            <h2 className="px-4 sm:px-8 mb-4 sm:mb-6 text-2xl sm:text-3xl font-bold tracking-tight">
+              Top 10 Today
+            </h2>
+            <div className="relative">
+              {top10Scroll.left > 2 && (
+                <button
+                  type="button"
+                  onClick={() => scrollTop10(-1)}
+                  aria-label="Scroll top 10 left"
+                  className="absolute left-1 sm:left-2 top-1/2 z-30 hidden size-10 -translate-y-1/2 place-items-center rounded-md border border-border bg-background/90 text-foreground shadow-lg backdrop-blur transition hover:bg-primary hover:text-primary-foreground sm:grid"
                 >
-                  <Download className="size-5" /> Download the App
-                </a>
+                  <ChevronLeft className="size-5" />
+                </button>
               )}
+              {top10Scroll.viewport > 0 &&
+                top10Scroll.left + top10Scroll.viewport < top10Scroll.width - 2 && (
+                <button
+                  type="button"
+                  onClick={() => scrollTop10(1)}
+                  aria-label="Scroll top 10 right"
+                  className="absolute right-1 sm:right-2 top-1/2 z-30 hidden size-10 -translate-y-1/2 place-items-center rounded-md border border-border bg-background/90 text-foreground shadow-lg backdrop-blur transition hover:bg-primary hover:text-primary-foreground sm:grid"
+                >
+                  <ChevronRight className="size-5" />
+                </button>
+              )}
+              <div ref={setTop10Ref} className="scrollbar-hide flex gap-3 sm:gap-5 overflow-x-auto scroll-smooth px-4 sm:px-8" >
+                {top10Today.map((m, i) => (
+                  <MovieCard key={m.id} movie={m} rank={i + 1} />
+                ))}
+              </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Trending */}
-      <section className="bg-background py-12 sm:py-16">
-        <div className="w-full px-4 sm:px-8">
-          <h2 className="px-1 text-2xl font-bold sm:text-3xl">Trending Now</h2>
-          <div className="relative mt-6">
-            {canScrollLeft && (
-              <button
-                onClick={() => scrollBy(-1)}
-                className="hidden md:flex absolute -left-3 top-1/2 -translate-y-1/2 z-10 size-10 items-center justify-center rounded-full bg-background/80 border border-border backdrop-blur-sm shadow-lg hover:bg-accent transition"
-                aria-label="Scroll left"
-              >
-                <ChevronLeft className="size-5" />
-              </button>
-            )}
-            <div
-              ref={scrollContainerRef}
-              onScroll={checkScroll}
-              className="flex gap-12 overflow-x-auto py-4 pl-8 pr-8 scrollbar-hide"
-            >
-              {trending.map((m, i) => (
-                <div key={m.id} className="shrink-0 relative transition duration-300 ease-out group hover:scale-105">
-                  <span className="rank-badge absolute bottom-6 -left-5 text-[4.5rem] sm:text-[5.5rem] font-black leading-none select-none z-10">
-                    {i + 1}
-                  </span>
-                  <Link
-                    to="/browse"
-                    className="block overflow-hidden rounded-lg relative transition-shadow duration-300 group-hover:shadow-[0_0_20px_rgba(239,68,68,0.5)]"
-                  >
-                    <img
-                      src={m.poster || "/placeholder.svg"}
-                      alt={m.title}
-                      className="h-60 w-40 object-cover sm:h-72 sm:w-52"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-100" />
-                    <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 ease-out">
-                      <p className="text-xs sm:text-sm font-semibold text-white leading-tight drop-shadow-lg">{m.title}</p>
-                    </div>
-                  </Link>
-                </div>
-              ))}
+          </section>
+        )}
+        {top10TrendingWeek.length > 0 && (
+          <section className="space-y-4 py-4">
+            <h2 className="px-4 sm:px-8 mb-4 sm:mb-6 text-2xl sm:text-3xl font-bold tracking-tight">
+              Trending This Week
+            </h2>
+            <div className="relative">
+              {trendingWeekScroll.left > 2 && (
+                <button
+                  type="button"
+                  onClick={() => scrollTrendingWeek(-1)}
+                  aria-label="Scroll trending week left"
+                  className="absolute left-1 sm:left-2 top-1/2 z-30 hidden size-10 -translate-y-1/2 place-items-center rounded-md border border-border bg-background/90 text-foreground shadow-lg backdrop-blur transition hover:bg-primary hover:text-primary-foreground sm:grid"
+                >
+                  <ChevronLeft className="size-5" />
+                </button>
+              )}
+              {trendingWeekScroll.viewport > 0 &&
+                trendingWeekScroll.left + trendingWeekScroll.viewport < trendingWeekScroll.width - 2 && (
+                <button
+                  type="button"
+                  onClick={() => scrollTrendingWeek(1)}
+                  aria-label="Scroll trending week right"
+                  className="absolute right-1 sm:right-2 top-1/2 z-30 hidden size-10 -translate-y-1/2 place-items-center rounded-md border border-border bg-background/90 text-foreground shadow-lg backdrop-blur transition hover:bg-primary hover:text-primary-foreground sm:grid"
+                >
+                  <ChevronRight className="size-5" />
+                </button>
+              )}
+              <div ref={setTrendingWeekRef} className="scrollbar-hide flex gap-3 sm:gap-5 overflow-x-auto scroll-smooth px-4 sm:px-8">
+                {top10TrendingWeek.map((m, i) => (
+                  <MovieCard key={m.id} movie={m} rank={i + 1} />
+                ))}
+              </div>
             </div>
-            {canScrollRight && (
-              <button
-                onClick={() => scrollBy(1)}
-                className="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 z-10 size-10 items-center justify-center rounded-full bg-background/80 border border-border backdrop-blur-sm shadow-lg hover:bg-accent transition"
-                aria-label="Scroll right"
-              >
-                <ChevronRight className="size-5" />
-              </button>
-            )}
-          </div>
-          <div className="mt-6 text-center">
-            <Link
-              to="/browse"
-              className="inline-flex items-center gap-2 text-primary hover:underline"
-            >
-              Browse the full catalog <ChevronRight className="size-4" />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Features */}
-      <section className="border-y-8 border-black bg-background py-20 sm:py-28">
-        <div className="mx-auto max-w-6xl px-4">
-          <h2 className="text-center text-4xl font-black sm:text-5xl">
-            Why StreamFlix?
-          </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-center text-lg text-muted-foreground">
-            Everything you love about streaming, minus the subscription fee.
-          </p>
-          <div className="mt-14 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
-            <FeatureCard
-              icon={<Play className="size-6" />}
-              title="Instant Streaming"
-              description="Hit play and start watching instantly. No buffering, no waiting — just smooth playback on any device."
-            />
-            <FeatureCard
-              icon={<Globe className="size-6" />}
-              title="Watch Anywhere"
-              description="Works on your phone, tablet, laptop, or TV. Sign in once and pick up where you left off on any device."
-            />
-            <FeatureCard
-              icon={<Shield className="size-6" />}
-              title="Kids Safe"
-              description="Built-in parental controls with Kids profiles that filter age-inappropriate content automatically."
-            />
-            <FeatureCard
-              icon={<Tv className="size-6" />}
-              title="Movies & TV"
-              description="Thousands of movies and TV episodes across every genre — from blockbusters to hidden gems."
-            />
-            <FeatureCard
-              icon={<Zap className="size-6" />}
-              title="Smart Recommendations"
-              description="AI-powered suggestions that learn what you love and surface titles you won't want to miss."
-            />
-            <FeatureCard
-              icon={<Smartphone className="size-6" />}
-              title="Mobile Apps"
-              description="Download the Android app for a native experience with offline support and notifications."
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ */}
-      <section className="border-y-8 border-black bg-background py-24">
-        <div className="mx-auto max-w-4xl px-4">
-          <h2 className="text-center text-4xl font-black sm:text-5xl">
-            Frequently Asked Questions
-          </h2>
-          <div className="mt-12 space-y-3">
-            {faqs.map(([q, a], i) => (
-              <FaqItem
-                key={i}
-                q={q}
-                a={a}
-                isOpen={openIndex === i}
-                onToggle={() => setOpenIndex(openIndex === i ? null : i)}
-              />
-            ))}
-          </div>
-          <div className="mt-14 text-center">
-            <p className="text-lg sm:text-xl">Ready to watch? It's free — dive right in.</p>
-            <Link
-              to="/auth"
-              className="mt-8 inline-flex items-center gap-2 rounded-md bg-primary px-6 py-3 text-base font-semibold text-primary-foreground hover:bg-primary/90"
-            >
-              <Play className="size-5 fill-current" /> Start Watching
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <footer className="border-t border-border px-4 py-10 text-sm text-muted-foreground">
-        <div className="mx-auto max-w-6xl text-center">
-          <p className="font-medium text-foreground">StreamFlix — Free for everyone.</p>
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
-            <ContactEmail className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors">
-              <Mail className="size-4" />
-            </ContactEmail>
-            <a
-              href="https://instagram.com/itiswayneee"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors"
-            >
-              <Instagram className="size-4" /> @itiswayneee
-            </a>
-            <a
-              href="https://github.com/csoegi/streamflix"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors"
-            >
-              <Github className="size-4" /> GitHub
-            </a>
-            <Link to="/tos" className="hover:text-foreground transition-colors">
-              Terms of Service
-            </Link>
-            <Link to="/privacy-policy" className="hover:text-foreground transition-colors">
-              Privacy Policy
-            </Link>
-          </div>
-          <p className="mt-6 text-xs">© {new Date().getFullYear()} StreamFlix</p>
-        </div>
-      </footer>
-    </main>
-  );
-}
-
-function FaqItem({
-  q,
-  a,
-  isOpen,
-  onToggle,
-}: {
-  q: string;
-  a: string;
-  isOpen: boolean;
-  onToggle: () => void;
-}) {
-  return (
-    <div className="overflow-hidden rounded-xl bg-surface">
-      <button
-        onClick={onToggle}
-        className="flex w-full items-center justify-between gap-4 px-8 py-6 text-left text-xl font-medium transition hover:bg-accent"
-        aria-expanded={isOpen}
-      >
-        <span>{q}</span>
-        <ChevronDown
-          className={`size-6 shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`}
-        />
-      </button>
-      <div
-        className={`grid transition-all duration-300 ${isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
-      >
-        <div className="overflow-hidden">
-          <p className="px-8 pb-8 pt-2 text-lg text-muted-foreground leading-relaxed">{a}</p>
-        </div>
+          </section>
+        )}
+        {rows.map((r: { title: string; items: Movie[] }) => (
+          <Row key={r.title} title={r.title} items={r.items} />
+        ))}
       </div>
-    </div>
-  );
-}
-
-function FeatureCard({
-  icon,
-  title,
-  description,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="rounded-xl border border-border bg-card/60 p-6 transition-all duration-300 hover:border-primary/40 hover:bg-card/80">
-      <div className="grid size-12 place-items-center rounded-lg bg-primary/10 text-primary">
-        {icon}
+      <div className="flex justify-center px-4 pb-10 pt-2">
+        <button
+          type="button"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          aria-label="Back to top"
+          title="Back to top"
+          className="grid size-12 place-items-center rounded-full border border-border bg-card/70 text-muted-foreground shadow-lg backdrop-blur transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95 hover:border-primary hover:bg-card hover:text-foreground"
+        >
+          <ArrowUp className="size-5" />
+        </button>
       </div>
-      <h3 className="mt-4 text-lg font-bold">{title}</h3>
-      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{description}</p>
+      <Footer />
     </div>
   );
 }

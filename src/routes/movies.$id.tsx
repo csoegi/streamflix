@@ -247,7 +247,7 @@ function MoviePage() {
     if (steps !== null) {
       router.history.go(-steps);
     } else {
-      navigate({ to: "/browse" });
+      navigate({ to: "/movies" });
     }
   };
 
@@ -286,7 +286,7 @@ function MoviePage() {
             </p>
           </div>
           <Link
-            to="/browse"
+            to="/movies"
             className="inline-flex items-center rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
           >
             Back to Browse

@@ -22,10 +22,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { search, searchByPerson, searchWithFilters, type SearchSort } from "@/lib/streamflix-data";
-import type { Movie } from "@/lib/types";
+import { PAGED_LIST_SIZE, MOVIE_SORT_OPTIONS } from "@/lib/constants";
 import { isKidsProfile, filterKidsContent } from "@/lib/kids-mode";
 import { z } from "zod";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { fetchSearch } from "@/lib/api/tmdb";
 
 const searchSchema = z.object({
   q: z.string().optional().catch(""),
@@ -82,7 +83,7 @@ function useDebounce<T>(value: T, delay: number): T {
 }
 
 function SearchPage() {
-  const currentSearch = useSearch({ from: "/_authenticated/search" });
+  const currentSearch = useSearch({ from: "/search" });
   const {
     q: urlQ,
     tab: urlTab,
@@ -119,17 +120,15 @@ function SearchPage() {
   const titlesQuery = useQuery({
     queryKey: searchKey,
     queryFn: async () => {
-      const run = hasFilters
-        ? searchWithFilters({
-            query: debouncedQ.length >= 2 ? debouncedQ : "",
-            genreId: genre,
-            year,
-            minRating: rating,
-            sort,
-          })
-        : search(debouncedQ);
-      const res = await run;
-      return kidsMode ? filterKidsContent(res) : res;
+      const search = await fetchSearch({
+          data: {
+            q: debouncedQ,
+            page: 1,
+            per_page: PAGED_LIST_SIZE.SEARCH_SUGGGESTION,
+            sort: MOVIE_SORT_OPTIONS.POPULAR,
+          },
+        });
+        return search?.results || [];
     },
     enabled: tab === "titles" && canSearch,
     staleTime: 0, // Always refetch when params change
@@ -255,7 +254,7 @@ function SearchPage() {
         </div>
 
         <section className="mx-auto w-full max-w-[1800px]">
-          {tab === "titles" && !q && !hasFilters && (
+          {/* {tab === "titles" && !q && !hasFilters && (
             <div className="mt-6">
               <p className="text-sm text-muted-foreground">Trending searches</p>
               <div className="mt-3 flex flex-wrap gap-2">
@@ -264,8 +263,8 @@ function SearchPage() {
                   return match ? (
                     <Link
                       key={t}
-                      to="/explore/$genreId"
-                      params={{ genreId: String(match.id) }}
+                      to="/collections/genres/$genreSlug"
+                      params={{ genreSlug: String(match.id) }}
                       search={{ q: match.name }}
                       className="rounded-full border border-border px-3 py-1.5 text-sm transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95 hover:border-foreground"
                     >
@@ -283,7 +282,7 @@ function SearchPage() {
                 })}
               </div>
             </div>
-          )}
+          )} */}
 
           {tab === "titles" && (q || hasFilters || loading) && (
             <div className="mx-auto mt-6 w-full">

@@ -40,7 +40,7 @@ export function CinematicHeroBanner({
         <div className="flex items-center gap-2 text-emerald-400 drop-shadow">
           <Sparkles className="size-5 animate-pulse" />
           <span className="text-sm font-semibold uppercase tracking-widest">
-            {vibeLabelSingular} vibe
+            {vibeLabelSingular}
           </span>
         </div>
         

@@ -1,8 +1,13 @@
+
+import { MovieList } from "./types";
+
 export const MAIN_VIDEO_URL = "";
+export const SEO_SITE_NAME = "Film Jepang";
 
 export const PAGED_LIST_SIZE = {
-  GRID: 35,
+  GRID: 30,
   HIGHLIGHT: 10,
+  SEARCH_SUGGGESTION: 5,
 } as const;
 export type PagedListSize = (typeof PAGED_LIST_SIZE)[keyof typeof PAGED_LIST_SIZE];
 
@@ -33,6 +38,14 @@ export type MovieSortOptions = (typeof MOVIE_SORT_OPTIONS)[keyof typeof MOVIE_SO
 
 export const CACHE_TTL = {
   TERMS: 1000 * 60 * 30, // 30 mins
-  MOVIES: 1000 * 60 * 10, // 10 mins
+  MOVIES: 1000 * 60 * 15, // 15 mins
 } as const;
 export type CacheTTL = (typeof CACHE_TTL)[keyof typeof CACHE_TTL];
+
+export const EMPTY_MOVIE_LIST: MovieList = {
+  page: 1,
+  total_pages: 0,
+  total_results: 0,
+  results: [],
+};
+export type EmptyMovieList = (typeof EMPTY_MOVIE_LIST)[keyof typeof EMPTY_MOVIE_LIST];
