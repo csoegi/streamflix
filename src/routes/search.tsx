@@ -1,77 +1,30 @@
+import { z } from "zod";
 import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import {
-  Search as SearchIcon,
-  X,
-  User,
-  Film,
-  ChevronLeft,
-  ChevronRight,
-  SlidersHorizontal,
-} from "lucide-react";
+import { Search as SearchIcon, X, User,Film} from "lucide-react";
 import { Navbar } from "@/components/streamflix/Navbar";
 import { Footer } from "@/components/streamflix/Footer";
-import { MovieCard } from "@/components/streamflix/MovieCard";
-import { LazyImage } from "@/components/streamflix/LazyImage";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { search, searchByPerson, searchWithFilters, type SearchSort } from "@/lib/streamflix-data";
-import { PAGED_LIST_SIZE, MOVIE_SORT_OPTIONS } from "@/lib/constants";
-import { isKidsProfile, filterKidsContent } from "@/lib/kids-mode";
-import { z } from "zod";
+import { PAGED_LIST_SIZE, MOVIE_SORT_OPTIONS, CACHE_TTL } from "@/lib/constants";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { fetchSearch } from "@/lib/api/tmdb";
+import { searchActors, searchKeyword } from "@/lib/api/tmdb";
+import { MovieListing } from "@/components/streamflix/MovieListing";
+import { MovieList, WPTerm } from "@/lib/types";
+
+type Tab = "titles" | "people";
 
 const searchSchema = z.object({
   q: z.string().optional().catch(""),
   tab: z.enum(["titles", "people"]).optional().catch("titles"),
-  year: z.coerce.number().optional().catch(undefined),
-  genre: z.coerce.number().optional().catch(undefined),
-  rating: z.coerce.number().optional().catch(undefined),
-  sort: z.enum(["relevance", "popularity", "rating", "year", "title"]).optional().catch(undefined),
+  page: z.number().default(1).catch(1),
+  sort: z.string().default(MOVIE_SORT_OPTIONS.NEW).catch(MOVIE_SORT_OPTIONS.NEW)
 });
 
 export const Route = createFileRoute("/search")({
   validateSearch: searchSchema,
-  head: () => ({ meta: [{ title: "Search — StreamFlix" }] }),
+  head: () => ({ meta: [{ title: "Film Jepang - Search Movie Collection" }] }),
   component: SearchPage,
 });
-
-type Tab = "titles" | "people";
-type PersonResult = { id: string; name: string; known_for: string; photo: string };
-
-const SORT_LABELS: Record<SearchSort, string> = {
-  relevance: "Relevance",
-  popularity: "Most popular",
-  rating: "Top rated",
-  year: "Newest",
-  title: "A–Z",
-};
-
-const CURATED_GENRES: { id: number; name: string }[] = [
-  { id: 28, name: "Action" },
-  { id: 12, name: "Adventure" },
-  { id: 16, name: "Animation" },
-  { id: 35, name: "Comedy" },
-  { id: 80, name: "Crime" },
-  { id: 99, name: "Documentary" },
-  { id: 18, name: "Drama" },
-  { id: 10751, name: "Family" },
-  { id: 14, name: "Fantasy" },
-  { id: 27, name: "Horror" },
-  { id: 10749, name: "Romance" },
-  { id: 878, name: "Sci-Fi" },
-  { id: 53, name: "Thriller" },
-];
-
-const filterSelectClass =
-  "h-9 w-auto min-w-[8rem] border-border bg-surface text-sm text-foreground data-[placeholder]:text-muted-foreground";
 
 function useDebounce<T>(value: T, delay: number): T {
   const [debounced, setDebounced] = useState(value);
@@ -85,130 +38,79 @@ function useDebounce<T>(value: T, delay: number): T {
 function SearchPage() {
   const currentSearch = useSearch({ from: "/search" });
   const {
-    q: urlQ,
-    tab: urlTab,
-    year: urlYear,
-    genre: urlGenre,
-    rating: urlRating,
-    sort: urlSort,
+    q: activeQuery,
+    tab: activeTab = "titles",
+    page: activePage = 1,     
+    sort: activeSort = MOVIE_SORT_OPTIONS.NEW,
   } = currentSearch;
-  const [q, setQ] = useState(urlQ ?? "");
-  const [tab, setTab] = useState<Tab>(urlTab ?? "titles");
-  const [year, setYear] = useState<number | undefined>(urlYear);
-  const [genre, setGenre] = useState<number | undefined>(urlGenre);
-  const [rating, setRating] = useState<number | undefined>(urlRating);
-  const [sort, setSort] = useState<SearchSort | undefined>(urlSort);
-  const [page, setPage] = useState(1);
+
+  // 1. 🟢 Keep ONLY 'q' in local state so the input text box remains fluid while typing
+  const [q, setQ] = useState(activeQuery ?? "");
   const debouncedQ = useDebounce(q, 300);
+
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-
-  const kidsMode = isKidsProfile();
-  const hasFilters = Boolean(year || genre || rating || sort);
+  const hasFilters = Boolean(activeSort);
   const canSearch = debouncedQ.length >= 2 || hasFilters;
 
-  // Invalidate search cache when URL search params change (e.g., back navigation)
+  // 2. 🟢 Sync changes to the search query 'q' into the URL seamlessly
   useEffect(() => {
-    queryClient.invalidateQueries({ queryKey: ["search"] });
-  }, [currentSearch, queryClient]);
-
-  // Build cache key based on search parameters
-  const searchKey = ["search", "titles", debouncedQ, year, genre, rating, sort, kidsMode] as const;
-  const peopleKey = ["search", "people", debouncedQ] as const;
-
-  // Fetch titles with React Query caching
-  const titlesQuery = useQuery({
-    queryKey: searchKey,
-    queryFn: async () => {
-      const search = await fetchSearch({
-          data: {
-            q: debouncedQ,
-            page: 1,
-            per_page: PAGED_LIST_SIZE.SEARCH_SUGGGESTION,
-            sort: MOVIE_SORT_OPTIONS.POPULAR,
-          },
-        });
-        return search?.results || [];
-    },
-    enabled: tab === "titles" && canSearch,
-    staleTime: 0, // Always refetch when params change
-    gcTime: 10 * 60 * 1000,
-  });
-
-  // Fetch people with React Query caching
-  const peopleQuery = useQuery({
-    queryKey: peopleKey,
-    queryFn: () => searchByPerson(debouncedQ),
-    enabled: tab === "people" && debouncedQ.length >= 2,
-    staleTime: 0,
-    gcTime: 10 * 60 * 1000,
-  });
-
-  // Sync query data to local state for pagination
-  const results = titlesQuery.data ?? [];
-  const people = peopleQuery.data ?? [];
-  const loading = titlesQuery.isLoading || peopleQuery.isLoading;
-
-  const years = Array.from(
-    { length: new Date().getFullYear() - 1970 + 1 },
-    (_, i) => new Date().getFullYear() - i,
-  );
-
-  const curatedGenres = CURATED_GENRES;
-
-  const trending = [
-    "Action",
-    "Comedy",
-    "Drama",
-    "Horror",
-    "Sci-Fi",
-    "Thriller",
-    "Romance",
-    "Animation",
-    "Documentary",
-    "Fantasy",
-  ];
-
-  const pushFilters = (next: {
-    year?: number;
-    genre?: number;
-    rating?: number;
-    sort?: SearchSort;
-  }) => {
     navigate({
       to: "/search",
-      search: { ...currentSearch, ...next },
-      replace: true,
+      search: (prev) => ({ 
+        ...prev, 
+        q: debouncedQ || undefined,
+        page: 1 // Reset pagination window back to page 1 whenever the query changes
+      }),
+      replace: true, 
+    });
+  }, [debouncedQ, navigate]);
+
+  const titlesQuery = useQuery({
+    queryKey: ["search_titles", debouncedQ, activePage, activeSort],
+    queryFn: async () => {
+      return await searchKeyword({
+          data: {
+            q: debouncedQ,
+            page: activePage, // Now reacts to real-time page turns correctly
+            per_page: PAGED_LIST_SIZE.GRID,
+            sort: activeSort, // Now reacts to sort changes correctly
+          },
+        }) as MovieList;
+    },
+    enabled: activeTab === "titles" && canSearch,
+    staleTime: CACHE_TTL.MOVIES, 
+  });
+
+  const peopleQuery = useQuery({
+    queryKey: ["search_peoples", debouncedQ],
+    queryFn: async () => {
+      const actors = await searchActors({ data: { actorName: debouncedQ } }) as WPTerm[];
+      return actors || [];
+    },
+    enabled: activeTab === "people" && debouncedQ.length >= 2,
+    staleTime: CACHE_TTL.MOVIES,
+  });
+
+  const movieList = titlesQuery.data;
+  const movieTotalPages = movieList?.total_pages || 0;
+  const movieTotalResult = movieList?.total_results || 0;
+  const movies = movieList?.results || [];
+  const people = peopleQuery.data || [];
+  const loading = titlesQuery.isFetching || peopleQuery.isFetching;
+
+  // 4. 🟢 Core Action handlers passed straight into your navigation nodes
+  const handleTabChange = (newTab: Tab) => {
+    navigate({
+      to: "/search",
+      search: (prev) => ({ ...prev, tab: newTab, page: 1 })
     });
   };
 
-  const clearFilters = () => {
-    setYear(undefined);
-    setGenre(undefined);
-    setRating(undefined);
-    setSort(undefined);
-    pushFilters({ year: undefined, genre: undefined, rating: undefined, sort: undefined });
-  };
-
-  // Reset page when query changes
-  useEffect(() => {
-    setPage(1);
-  }, [debouncedQ, tab, year, genre, rating, sort, kidsMode]);
-
-  // Prefetch next page for smoother pagination
-  useEffect(() => {
-    if (tab === "titles" && page < Math.max(1, Math.ceil(results.length / 24))) {
-      // No-op: results are already fully loaded, pagination is client-side
-    }
-  }, [tab, page, results.length]);
-
-  const totalPages = Math.max(1, Math.ceil(results.length / 24));
-  const visible = results.slice((page - 1) * 24, page * 24);
-
   return (
-    <div className="min-h-dvh bg-background">
+    <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
-      <main className="px-4 pt-24 pb-16 sm:px-8">
+      <main className="flex-1 px-4 pt-24 pb-16 sm:px-8">
         <div className="mx-auto max-w-4xl">
           <div className="relative">
             <SearchIcon className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-muted-foreground" />
@@ -218,13 +120,11 @@ function SearchPage() {
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search titles or people…"
               aria-label="Search titles or people"
-              className="w-full rounded-full border border-border bg-surface pl-12 pr-12 py-3.5 sm:py-4 text-base sm:text-lg focus:border-primary focus:outline-none"
+              className="w-full rounded-full border border-border bg-zinc-900 pl-12 pr-12 py-3.5 sm:py-4 text-base sm:text-lg focus:border-primary focus:outline-none"
             />
             {q && (
               <button
-                onClick={() => {
-                  setQ("");
-                }}
+                onClick={() => setQ("")}
                 className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-muted-foreground hover:text-foreground"
                 aria-label="Clear"
               >
@@ -237,13 +137,8 @@ function SearchPage() {
             {(["titles", "people"] as Tab[]).map((t) => (
               <button
                 key={t}
-                onClick={() => {
-                  setTab(t);
-                  setQ("");
-                  setPage(1);
-                  queryClient.invalidateQueries({ queryKey: ["search"] });
-                }}
-                className={`flex items-center gap-1.5 px-4 py-2.5 sm:py-2 text-sm font-medium transition-all duration-300 ease-in-out border-b-2 -mb-px ${tab === t ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+                onClick={() => handleTabChange(t)} // 🟢 Use the updated URL navigator handler
+                className={`flex items-center gap-1.5 px-4 py-2.5 sm:py-2 text-sm font-medium transition-all border-b-2 -mb-px ${activeTab === t ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
               >
                 {t === "titles" && <Film className="size-4" />}
                 {t === "people" && <User className="size-4" />}
@@ -253,229 +148,49 @@ function SearchPage() {
           </div>
         </div>
 
-        <section className="mx-auto w-full max-w-[1800px]">
-          {/* {tab === "titles" && !q && !hasFilters && (
-            <div className="mt-6">
-              <p className="text-sm text-muted-foreground">Trending searches</p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {trending.map((t) => {
-                  const match = curatedGenres.find((g) => g.name.toLowerCase() === t.toLowerCase());
-                  return match ? (
-                    <Link
-                      key={t}
-                      to="/collections/genres/$genreSlug"
-                      params={{ genreSlug: String(match.id) }}
-                      search={{ q: match.name }}
-                      className="rounded-full border border-border px-3 py-1.5 text-sm transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95 hover:border-foreground"
-                    >
-                      {t}
-                    </Link>
-                  ) : (
-                    <button
-                      key={t}
-                      onClick={() => setQ(t)}
-                      className="rounded-full border border-border px-3 py-1.5 text-sm transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95 hover:border-foreground"
-                    >
-                      {t}
-                    </button>
-                  );
-                })}
-              </div>
+        {/* Dynamic Context Render Section Grid */}
+        <section className="mx-auto w-full max-w-[1800px] mt-6">
+          {loading && (
+            <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7">
+              {Array.from({ length: 14 }).map((_, i) => (
+                <Skeleton key={i} className="w-full aspect-[2/3] rounded-xl" />
+              ))}
             </div>
-          )} */}
+          )}          
 
-          {tab === "titles" && (q || hasFilters || loading) && (
-            <div className="mx-auto mt-6 w-full">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  <SlidersHorizontal className="size-4" /> Filters
-                </span>
-                <Select
-                  value={year ? String(year) : "all"}
-                  onValueChange={(v) => {
-                    const val = v === "all" ? undefined : Number(v);
-                    setYear(val);
-                    pushFilters({ year: val });
-                  }}
-                >
-                  <SelectTrigger aria-label="Year" className={filterSelectClass}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Any year</SelectItem>
-                    {years.map((y) => (
-                      <SelectItem key={y} value={String(y)}>
-                        {y}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Select
-                  value={genre ? String(genre) : "all"}
-                  onValueChange={(v) => {
-                    const val = v === "all" ? undefined : Number(v);
-                    setGenre(val);
-                    pushFilters({ genre: val });
-                  }}
-                >
-                  <SelectTrigger aria-label="Category" className={filterSelectClass}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All categories</SelectItem>
-                    {curatedGenres.map((g) => (
-                      <SelectItem key={g.id} value={String(g.id)}>
-                        {g.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Select
-                  value={rating ? String(rating) : "all"}
-                  onValueChange={(v) => {
-                    const val = v === "all" ? undefined : Number(v);
-                    setRating(val);
-                    pushFilters({ rating: val });
-                  }}
-                >
-                  <SelectTrigger aria-label="Minimum rating" className={filterSelectClass}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Any rating</SelectItem>
-                    <SelectItem value="7">7+</SelectItem>
-                    <SelectItem value="8">8+</SelectItem>
-                    <SelectItem value="9">9+</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select
-                  value={sort ?? "relevance"}
-                  onValueChange={(v) => {
-                    const val = v === "relevance" ? undefined : (v as SearchSort);
-                    setSort(val);
-                    pushFilters({ sort: val });
-                  }}
-                >
-                  <SelectTrigger aria-label="Sort" className={filterSelectClass}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="relevance">Sort: Relevance</SelectItem>
-                    {(["popularity", "rating", "year", "title"] as SearchSort[]).map((s) => (
-                      <SelectItem key={s} value={s}>
-                        {SORT_LABELS[s]}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {hasFilters && (
-                  <button
-                    onClick={clearFilters}
-                    className="rounded-md border border-border px-3 py-2 text-sm text-muted-foreground transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95 hover:border-destructive hover:text-destructive"
-                  >
-                    Clear
-                  </button>
-                )}
-              </div>
-
-              <p className="mt-6 text-sm text-muted-foreground">
-                {loading
-                  ? "Searching..."
-                  : q
-                    ? `${results.length} result${results.length === 1 ? "" : "s"} for "${q}"`
-                    : `${results.length} title${results.length === 1 ? "" : "s"} matching your filters`}
-              </p>
-              {loading && (
-                <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7">
-                  {Array.from({ length: 12 }).map((_, i) => (
-                    <Skeleton key={i} className="w-full aspect-[2/3] rounded-xl" />
-                  ))}
-                </div>
-              )}
-              {!loading && results.length === 0 && (
-                <p className="mt-10 text-center text-sm text-muted-foreground">
-                  No titles found. Try adjusting your filters.
-                </p>
-              )}
-              {!loading && results.length > 0 && (
-                <>
-                  <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7">
-                    {visible.map((m) => (
-                      <button
-                        key={m.id}
-                        onClick={() => navigate({ to: "/movies/$id", params: { id: m.id } })}
-                        className="w-full text-left"
-                      >
-                        <MovieCard movie={m} fluid />
-                      </button>
-                    ))}
-                  </div>
-                  {totalPages > 1 && (
-                    <div className="mt-8 hidden items-center justify-center gap-2 md:flex">
-                      <button
-                        onClick={() => setPage((p) => Math.max(1, p - 1))}
-                        disabled={page === 1}
-                        className="inline-flex items-center gap-1 rounded-md border border-border px-3 py-2 text-sm text-muted-foreground transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95 hover:text-foreground disabled:opacity-40 disabled:cursor-default"
-                      >
-                        <ChevronLeft className="size-4" /> Previous
-                      </button>
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                        <button
-                          key={p}
-                          onClick={() => setPage(p)}
-                          className={`rounded-md px-3 py-2 text-sm transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95 ${p === page ? "bg-primary text-primary-foreground scale-105" : "border border-border text-muted-foreground hover:text-foreground"}`}
-                        >
-                          {p}
-                        </button>
-                      ))}
-                      <button
-                        onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                        disabled={page === totalPages}
-                        className="inline-flex items-center gap-1 rounded-md border border-border px-3 py-2 text-sm text-muted-foreground transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95 hover:text-foreground disabled:opacity-40 disabled:cursor-default"
-                      >
-                        Next <ChevronRight className="size-4" />
-                      </button>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
+          {!loading && activeTab === "titles" && (debouncedQ || hasFilters) && (
+            <MovieListing
+              movies={movies}
+              activePage={activePage}
+              totalPages={movieTotalPages}
+              totalResults={movieTotalResult}
+              activeSort={activeSort}
+              searchQuery={debouncedQ}
+            />
           )}
 
-          {tab === "people" && (
-            <div className="mt-6">
-              {!q ? (
-                <p className="text-sm text-muted-foreground">
-                  Type an actor or director name above
+          {!loading && activeTab === "people" && (
+            <div>
+              {debouncedQ.length < 2 ? (
+                <p className="text-sm text-muted-foreground text-center py-12">
+                  Type an actor name above
                 </p>
+              ) : people.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-12">No matching people profiles found</p>
               ) : (
-                <div className="space-y-3">
-                  {people.length === 0 && (
-                    <p className="text-sm text-muted-foreground">No people found</p>
-                  )}
-                  {people.map((p: PersonResult) => (
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 max-w-4xl mx-auto">
+                  {people.map((p: WPTerm) => (
                     <Link
-                      key={p.id}
-                      to="/person/$id"
-                      params={{ id: p.id }}
-                      className="flex items-center gap-4 rounded-lg border border-border bg-surface p-3 hover:ring-1 hover:ring-primary transition"
+                      key={p.term_id}
+                      to="/collections/actresses/$actorSlug"
+                      params={{ actorSlug: p.slug }}
+                      className="flex items-center gap-4 rounded-lg border border-border bg-zinc-900 p-3 hover:ring-1 hover:ring-primary transition"
                     >
-                      {p.photo ? (
-                        <LazyImage
-                          src={p.photo}
-                          alt={p.name}
-                          className="size-14 rounded-full object-cover"
-                        />
-                      ) : (
-                        <div className="grid size-14 place-items-center rounded-full bg-muted text-muted-foreground">
-                          <User className="size-6" />
-                        </div>
-                      )}
+                      <div className="grid size-12 place-items-center rounded-full bg-muted text-muted-foreground shrink-0">
+                        <User className="size-5" />
+                      </div>
                       <div className="min-w-0 flex-1">
-                        <p className="font-medium text-foreground">{p.name}</p>
-                        {p.known_for && (
-                          <p className="truncate text-xs text-muted-foreground">{p.known_for}</p>
-                        )}
+                        <p className="font-medium text-foreground truncate">{p.name}</p>
                       </div>
                     </Link>
                   ))}
@@ -485,6 +200,7 @@ function SearchPage() {
           )}
         </section>
       </main>
+      
       <Footer />
     </div>
   );

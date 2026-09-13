@@ -6,7 +6,7 @@ import { TermMovieListingSkeleton } from "@/components/streamflix/TermMovieListi
 import { CinematicHeroBanner } from "@/components/streamflix/CinematicHeroBanner";
 import { CinematicBanner } from "@/components/streamflix/CinematicBanner";
 import { TermMovieListing } from "@/components/streamflix/TermMovieListing";  
-import { actorTermsQueryOptions, moviesByActorQueryOptions } from "@/lib/api/tmdb";
+import { directorTermsQueryOptions, moviesByDirectorQueryOptions } from "@/lib/api/tmdb";
 import { MOVIE_SORT_OPTIONS, SEO_SITE_NAME } from '@/lib/constants';
 
 const moviesSearchSchema = z.object({
@@ -14,7 +14,7 @@ const moviesSearchSchema = z.object({
   sort: z.string().default(MOVIE_SORT_OPTIONS.NEW).catch(MOVIE_SORT_OPTIONS.NEW)
 });
 
-export const Route = createFileRoute("/collections/actresses/$actorSlug")({
+export const Route = createFileRoute("/collections/directors/$directorSlug")({
   validateSearch: moviesSearchSchema,
   shouldReload: false,
   loaderDeps: ({ search: { page, sort } }) => ({ page, sort }),
@@ -22,13 +22,13 @@ export const Route = createFileRoute("/collections/actresses/$actorSlug")({
   // Get queryClient out of context directly
   loader: async ({ params, deps: { page, sort }, context: { queryClient } }) => {
     const [terms, movieList] = await Promise.all([
-      queryClient.ensureQueryData(actorTermsQueryOptions()),
-      queryClient.ensureQueryData(moviesByActorQueryOptions(params.actorSlug, page, sort))
+      queryClient.ensureQueryData(directorTermsQueryOptions()),
+      queryClient.ensureQueryData(moviesByDirectorQueryOptions(params.directorSlug, page, sort))
     ]);
     
     return {
-      slug: params.actorSlug,
-      name: terms.find(g => g.slug === params.actorSlug)?.name || "",
+      slug: params.directorSlug,
+      name: terms.find(g => g.slug === params.directorSlug)?.name || "",
       top10Terms: terms.sort((a, b) => b.count - a.count).slice(0, 10),
       movies: movieList.results,
       totalPages: movieList.total_pages,
@@ -39,13 +39,13 @@ export const Route = createFileRoute("/collections/actresses/$actorSlug")({
   },
   
   head: ({ loaderData }) => ({
-    meta: [{ title: `${SEO_SITE_NAME} - Browse Movies by ${loaderData?.name}.` }],
+    meta: [{ title: `${SEO_SITE_NAME} - Browse Movies Directed by ${loaderData?.name}.` }],
   }),
   pendingComponent: () => <TermMovieListingSkeleton chipCount={10} cardCount={14} />,
-  component: ExploreActressesPage,
+  component: ExploreDirectorPage,
 });
 
-function ExploreActressesPage() {
+function ExploreDirectorPage() {
   const { 
     slug, 
     name, 
@@ -64,15 +64,15 @@ function ExploreActressesPage() {
           heroMovie={movies[0]}
           termName={name}
           totalResults={totalResults}
-          vibeLabelSingular="actress"
+          vibeLabelSingular="director"
         />
       ) :(
         <CinematicBanner
             themeColor="emerald"
-            title="Pick an actress"
+            title="Pick a director"
             totalCount={0}
-            countLabelSingular="actress"
-            countLabelPlural="actresses"
+            countLabelSingular="director"
+            countLabelPlural="directors"
           />
       )}
       <TermMovieListing
@@ -82,7 +82,7 @@ function ExploreActressesPage() {
         activePage={activePage}
         totalPages={totalPages}
         activeSort={activeSort}
-        paramKeyName="actorSlug"
+        paramKeyName="directorSlug"
       />
       <Footer />
     </div>

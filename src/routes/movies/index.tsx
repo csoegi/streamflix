@@ -14,7 +14,7 @@ const moviesSearchSchema = z.object({
   sort: z.string().default(MOVIE_SORT_OPTIONS.NEW).catch(MOVIE_SORT_OPTIONS.NEW)
 });
 
-export const Route = createFileRoute("/movies")({
+export const Route = createFileRoute("/movies/")({
   validateSearch: moviesSearchSchema,
   shouldReload: false,
   loaderDeps: ({ search: { page, sort } }) => ({ page, sort }),
@@ -32,7 +32,7 @@ export const Route = createFileRoute("/movies")({
         activeSort: sort
       };
   },
-  head: () => ({ meta: [{ title: `${SEO_SITE_NAME} - Browse Japanese AV Movie Collections in HD` }] }),
+  head: () => ({ meta: [{ title: `${SEO_SITE_NAME} - Discover Japanese AV Movie Collections in HD` }] }),
   component: MoviesPage,
   pendingComponent: () => <BrowseSkeleton isHomePage={true}/>,
 });
@@ -65,7 +65,9 @@ function MoviesPage() {
           movies={movies}
           activePage={activePage}
           totalPages={totalPages}
+          totalResults={totalResults}
           activeSort={activeSort}
+          searchQuery=""
         />
       <Footer />
     </div>

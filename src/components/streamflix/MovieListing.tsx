@@ -2,20 +2,24 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { ChevronDown } from "lucide-react";
 import { MovieCard } from "@/components/streamflix/MovieCard";
 import type { Movie } from "@/lib/types";
-import { MovieSortOptions  } from '@/lib/constants';
+import { MovieSortOptions, MOVIE_SORT_OPTIONS } from '@/lib/constants';
 
 interface MovieListingProps {
   movies: Movie[];
   activePage: number;
   activeSort: string;  
+  totalResults: number;
   totalPages: number;
+  searchQuery: string;
 }
 
 export function MovieListing({
   movies,
   activePage,
   activeSort,
+  totalResults,
   totalPages,
+  searchQuery
 }: MovieListingProps) {
   const navigate = useNavigate();
 
@@ -40,10 +44,14 @@ export function MovieListing({
       
       {/* 🛠️ Top Controls Row: Navigation Chips + Sorting Selector */}
       <div className="mt-8 flex items-center justify-between border-b border-zinc-800 pb-6 w-full">
-        <h1 className="text-2xl font-bold text-zinc-100 tracking-tight">
-          Browse Movies
-        </h1>       
-                
+        {searchQuery.length > 0 ? (
+          <p className="text-xl text-muted-foreground text-center">
+            {totalResults} results for "{searchQuery}"
+          </p>
+        ) : (
+          <p className="text-xl text-muted-foreground text-center">Showing {totalResults} Movies</p>
+        )}
+
         {/* 💡 Sorting Selector Element */}
         <div className="flex items-center gap-2 min-w-[160px] justify-end ml-auto">
           <div className="relative w-full">
@@ -52,11 +60,13 @@ export function MovieListing({
               onChange={(e) => handleSortChange(e.target.value as MovieSortOptions)}
               className="appearance-none w-full h-11 bg-zinc-900/60 border border-zinc-800 rounded-lg pl-4 pr-10 text-sm font-semibold text-zinc-200 cursor-pointer focus:outline-none focus:bg-zinc-900 focus:border-zinc-700 transition"
             >                
-              <option value="new">Recently Added</option>
-              <option value="release_date">Release Date</option>
-              <option value="hot">Hot</option>
-              <option value="trending">Trending</option>
-              <option value="popular">Most Viewed</option>
+              <option value={MOVIE_SORT_OPTIONS.NEW}>Recently Added</option>
+              <option value={MOVIE_SORT_OPTIONS.RELEASE_DATE}>Release Date</option>
+              <option value={MOVIE_SORT_OPTIONS.HOT}>Trending Today</option>
+              <option value={MOVIE_SORT_OPTIONS.TRENDING}>Trending This Week</option>
+              <option value={MOVIE_SORT_OPTIONS.POPULAR}>Popular</option>
+              <option value={MOVIE_SORT_OPTIONS.MOST_VIEWED}>Most Viewed</option>
+              <option value={MOVIE_SORT_OPTIONS.TOP_RATED}>Top Rated</option>
             </select>
             <ChevronDown className="absolute right-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
           </div>

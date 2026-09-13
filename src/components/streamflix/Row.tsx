@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { Movie } from "@/lib/types";
 import { MovieCard } from "./MovieCard";
+import { Link } from "@tanstack/react-router";
+import {  MOVIE_SORT_OPTIONS } from "@/lib/constants";
 
 const BASE_CARD_W = 175;
 const SM_CARD_W = 220;
@@ -11,12 +13,14 @@ const OVERSCAN = 3;
 
 export function Row({
   title,
+  sort,
   items,
   reasons,
   reasonLinks,
   hideTitle = false,
 }: {
   title: string;
+  sort?: string;
   items: Movie[];
   reasons?: Record<string, string>;
   reasonLinks?: Record<string, string>;
@@ -98,13 +102,22 @@ export function Row({
   };
 
   return (
-    <section className="relative space-y-0 py-0 sm:space-y-0 sm:py-0">
-      {!hideTitle && (
-        <h2 className="px-4 sm:px-8 mb-4 sm:mb-6 text-2xl sm:text-3xl font-bold tracking-tight">
-          {title}
-        </h2>
-      )}
-
+    <section className="space-y-4 py-4">    
+      <div className="flex items-end justify-between px-4 sm:px-8 mb-4 sm:mb-6">
+        {!hideTitle && (
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
+            {title}
+          </h2>
+        )}
+        <Link 
+          to="/movies"
+          search={{ page: 1, sort: sort }}
+          className="group flex items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+        >
+          View More 
+          <ChevronRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+        </Link>
+      </div>
       <div className="relative">
         {isSm && canScrollLeft && (
           <button
@@ -126,7 +139,7 @@ export function Row({
         )}
         <div
           ref={scrollerRef}
-          className="scrollbar-thin flex min-w-0 touch-pan-x gap-4 overflow-x-auto overscroll-x-contain scroll-smooth px-4 sm:gap-6 sm:px-8 pb-4 sm:pb-10"
+          className="scrollbar-hide flex gap-3 sm:gap-5 overflow-x-auto scroll-smooth px-4 sm:px-8"
           style={{ WebkitOverflowScrolling: "touch", touchAction: "pan-x" }}
         >
           {padStart > 0 && <div aria-hidden style={{ width: padStart }} className="shrink-0" />}

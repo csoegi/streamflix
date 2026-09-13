@@ -28,7 +28,7 @@ function SeriesPage() {
       <Navbar />
       <CinematicBanner
         themeColor="purple"
-        title="Pick a serie"
+        title="Pick a code prefix"
         totalCount={terms.length}
         countLabelSingular="serie"
         countLabelPlural="series"

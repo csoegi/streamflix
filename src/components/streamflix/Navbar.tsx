@@ -7,7 +7,7 @@ import { auth, db } from "@/lib/firebase";
 import { signOut as firebaseSignOut } from "firebase/auth";
 import { doc, getDoc, onSnapshot } from "firebase/firestore";
 import { useQuery } from "@tanstack/react-query";
-import { fetchSearch } from "@/lib/api/tmdb";
+import { searchKeyword } from "@/lib/api/tmdb";
 import { MOVIE_SORT_OPTIONS, PAGED_LIST_SIZE } from "@/lib/constants";
 
 export function Navbar() {
@@ -44,7 +44,7 @@ export function Navbar() {
   const { data: searchSuggestions = [], isFetching } = useQuery({
     queryKey: ["search_suggestions", deferredSearchQ],
     queryFn: async () => {
-      const search = await fetchSearch({
+      const search = await searchKeyword({
         data: {
           q: deferredSearchQ,
           page: 1,

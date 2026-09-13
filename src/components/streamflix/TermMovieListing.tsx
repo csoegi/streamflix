@@ -2,7 +2,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { ChevronDown } from "lucide-react";
 import { MovieCard } from "@/components/streamflix/MovieCard";
 import type { Movie } from "@/lib/types";
-import { MovieSortOptions  } from '@/lib/constants';
+import { MovieSortOptions, MOVIE_SORT_OPTIONS  } from '@/lib/constants';
 
 export interface NavigationChip {
   term_id: number;
@@ -17,7 +17,7 @@ interface TermMovieListingProps {
   activePage: number;
   totalPages: number;
   activeSort: string;
-  paramKeyName: "genreSlug" | "actorSlug" | "studioSlug" | "codeSlug";
+  paramKeyName: "genreSlug" | "actorSlug" | "studioSlug" | "codeSlug" | "directorSlug";
 }
 
 export function TermMovieListing({
@@ -136,11 +136,13 @@ export function TermMovieListing({
               onChange={(e) => handleSortChange(e.target.value as MovieSortOptions)}
               className="appearance-none w-full h-11 bg-zinc-900/60 border border-zinc-800 rounded-lg pl-4 pr-10 text-sm font-semibold text-zinc-200 cursor-pointer focus:outline-none focus:bg-zinc-900 focus:border-zinc-700 transition"
             >                
-              <option value="new">Recently Added</option>
-              <option value="release_date">Release Date</option>
-              <option value="hot">Hot</option>
-              <option value="trending">Trending</option>
-              <option value="popular">Most Viewed</option>
+              <option value={MOVIE_SORT_OPTIONS.NEW}>Recently Added</option>
+              <option value={MOVIE_SORT_OPTIONS.RELEASE_DATE}>Release Date</option>
+              <option value={MOVIE_SORT_OPTIONS.HOT}>Trending Today</option>
+              <option value={MOVIE_SORT_OPTIONS.TRENDING}>Trending This Week</option>
+              <option value={MOVIE_SORT_OPTIONS.POPULAR}>Popular</option>
+              <option value={MOVIE_SORT_OPTIONS.MOST_VIEWED}>Most Viewed</option>
+              <option value={MOVIE_SORT_OPTIONS.TOP_RATED}>Top Rated</option>
             </select>
             <ChevronDown className="absolute right-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
           </div>

@@ -39,7 +39,7 @@ export const Route = createFileRoute("/collections/studios/$studioSlug")({
   },
   
   head: ({ loaderData }) => ({
-    meta: [{ title: `${SEO_SITE_NAME} - Watch Movies by ${loaderData?.name} Studio.` }],
+    meta: [{ title: `${SEO_SITE_NAME} - Browse Movies Produced by ${loaderData?.name}.` }],
   }),
   pendingComponent: () => <TermMovieListingSkeleton chipCount={10} cardCount={14} />,
   component: ExploreStudioPage,

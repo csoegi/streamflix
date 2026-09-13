@@ -36,28 +36,7 @@ export function CinematicHeroCarousel({ slides }: { slides: Movie[] }) {
     touchStart.current = null;
     touchDelta.current = 0;
   }, [go]);
-  
-  const genreLabels: Record<string, string> = {
-    "28": "Action",
-    "12": "Adventure",
-    "16": "Animation",
-    "35": "Comedy",
-    "80": "Crime",
-    "99": "Documentary",
-    "18": "Drama",
-    "10751": "Family",
-    "14": "Fantasy",
-    "36": "History",
-    "27": "Horror",
-    "10402": "Music",
-    "9648": "Mystery",
-    "10749": "Romance",
-    "878": "Sci-Fi",
-    "10752": "War",
-    "37": "Western",
-    "53": "Thriller",
-  };
-  
+    
   if (slides.length === 0) return null;
   const s = slides[i];
   if (!s) return null;
@@ -92,10 +71,10 @@ export function CinematicHeroCarousel({ slides }: { slides: Movie[] }) {
               isCurrent ? "opacity-100 z-0" : "opacity-0 z-0 pointer-events-none"
             }`}
           >
-            {/* LAYER 1: Ambient Blurred Background (Brings portrait artwork out to wide screen edges) 
-                blur-sm | blur |blur-md | blur-lg | blur-xl| blur-3xl
+            {/* LAYER 1: Ambient Background Container 
+                🟢 FIXED RESOURCING: Scale factor applies ONLY to desktop to preserve crisp mobile boundary edges
             */}
-            <div className="absolute inset-0 size-full select-none pointer-events-none overflow-hidden scale-110 transform">
+            <div className="absolute inset-0 size-full select-none pointer-events-none overflow-hidden md:scale-110 md:transform">
               {imageSrc && (
                 <img
                   src={imageSrc}
@@ -103,7 +82,8 @@ export function CinematicHeroCarousel({ slides }: { slides: Movie[] }) {
                   loading={idx === i ? "eager" : "lazy"}
                   decoding="async"
                   fetchPriority={idx === i ? "high" : "low"}
-                  className={`size-full object-cover blur-sm opacity-70 brightness-80 ${
+                  // 🟢 FIXED MOBILE BLUR: 'md:blur-sm' ensures image stays perfectly sharp on mobile devices
+                  className={`size-full object-cover md:blur-sm opacity-70 brightness-80 ${
                     isCurrent ? "animate-ken-burns" : ""
                   }`}
                 />
@@ -143,12 +123,12 @@ export function CinematicHeroCarousel({ slides }: { slides: Movie[] }) {
               className="mb-4 mx-auto md:mx-0 max-h-24 w-auto max-w-full object-contain select-none sm:max-h-32 md:max-h-36"
             />
           ) : (
-            <h1 className="mb-4 text-3xl md:text-4xl lg:text-5xl font-bold text-white drop-shadow-md">{s.title}</h1>
+            <h1 className="mb-4 text-xl md:text-2xl lg:text-3xl font-bold text-white drop-shadow-md">{s.title}</h1>
           )}
           
           {s.genres && s.genres.length > 0 && (
             <div className="mb-2 flex flex-wrap items-center justify-center md:justify-start gap-1.5 text-sm sm:text-base font-normal text-white/80 tracking-wide drop-shadow">
-              {s.genres.slice(0, 3).map((genreName, idx) => (
+              {s.genres.slice(0, 5).map((genreName, idx) => (
                 <span key={genreName} className="flex items-center gap-1.5">
                   {idx > 0 && <span className="text-white/40">·</span>}
                   {genreName}
@@ -181,7 +161,7 @@ export function CinematicHeroCarousel({ slides }: { slides: Movie[] }) {
             <Link
               to="/watch/$id"
               params={{ id: s.id }}
-              search={{ source: "wp" } as any} // FIX: Passes source parameter to select player layouts
+              search={{ source: "wp" } as any} 
               className="inline-flex items-center gap-2 rounded-md bg-white px-3 py-2 text-xs font-semibold text-black transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95 hover:bg-white/85 sm:px-5 sm:py-3 sm:text-sm shadow-lg"
             >
               <Play className="size-4 fill-current sm:size-5" /> Play
@@ -197,7 +177,7 @@ export function CinematicHeroCarousel({ slides }: { slides: Movie[] }) {
         </div>
       </div>
 
-      {/* Slider Carousel Pips Controller Navigation Dots Panel */}
+      {/* Slider Navigation Dots */}
       <div className="absolute bottom-6 inset-x-0 z-10 flex items-center justify-center gap-2 sm:justify-end sm:right-8 sm:inset-x-auto">
         {slides.map((_, idx) => (
           <button
@@ -210,5 +190,6 @@ export function CinematicHeroCarousel({ slides }: { slides: Movie[] }) {
         ))}
       </div>
     </section>
+
   );
 }

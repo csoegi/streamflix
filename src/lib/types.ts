@@ -1,6 +1,7 @@
 export interface Movie {
   id: string; // Numerical post ID converted safely to a string matching TMDB schemas
   code?: string;
+  codePrefix?: string;
   slug?: string;
   title?: string;
   description?: string; // Standard text property (Maps to WP overview/short_description)
@@ -17,9 +18,9 @@ export interface Movie {
   castPfp?: string[];
   castRoles?: string[];
   castIds?: number[];
-  directorId?: string;   // Clean String (Extracted safely from WP directors array index)
-  director?:  string;
-  directorPfp?: string;
+  directorId?: number[];   // Clean String (Extracted safely from WP directors array index)
+  director?:  string[];
+  directorPfp?: string[];
   match: number;
   score?: number;
   popularity?: number;  

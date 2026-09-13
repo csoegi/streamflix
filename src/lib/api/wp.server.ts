@@ -240,9 +240,7 @@ export function toMovie(m: any): Movie {
     const scoreVal = m.imdb_score ? parseFloat(m.imdb_score) : 0;
     
     let releaseYear = new Date().getFullYear();
-    if (m.release_date) {
-        releaseYear = new Date(m.release_date).getFullYear();
-    } else if (m.year && m.year.length > 0) {
+    if (m.year && m.year.length > 0) {
         releaseYear = parseInt(m.year);
     }
 
@@ -255,6 +253,7 @@ export function toMovie(m: any): Movie {
         // === CORE METADATA
         id: String(m.id),
         code: m.code || "",
+        codePrefix: m.code_prefix || "",
         slug: m.slug || "",
         title: m.title || "Untitled",
         description: m.short_description || m.overview || "No description available.",
@@ -273,9 +272,9 @@ export function toMovie(m: any): Movie {
         castRoles: [],
         castIds: [],
         // === DIRECTOR
-        director: m.directors?.length ? m.directors[0] : "Unknown",
-        directorId: m.directors?.length ? m.directors[0] : "Unknown",
-        directorPfp: "",
+        director:  Array.isArray(m.directors) && m.directors.length > 0 ? m.directors : ["Unknown Director"],
+        directorId: [],
+        directorPfp: [],
         // === PRODUCTION
         production_company: m.production_company || "",
         origin_country: m.origin_country || [],
@@ -292,7 +291,7 @@ export function toMovie(m: any): Movie {
         // === SCORING
         match: scoreVal ? Math.round(scoreVal * 10) : 0,
         score: scoreVal || undefined,
-        popularity: m.views?.total ? parseFloat(m.views.total) : undefined,
+        popularity: m.vote_count ? parseInt(m.vote_count) : undefined,
         vote_count: m.vote_count ? parseInt(m.vote_count) : undefined,
         imdb_score: m.imdb_score || undefined,
     
@@ -332,8 +331,8 @@ export function toTv(m: any): Movie {
     castPfp: [],
     castRoles: [],
     castIds: [],
-    directorId: "",
-    directorPfp: "",
+    // directorId: "",
+    // directorPfp: "",
     match: m.vote_average ? Math.round(m.vote_average * 10) : 0,
     score: m.vote_average ? Number(m.vote_average.toFixed(1)) : undefined,
   };

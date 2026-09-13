@@ -20,6 +20,7 @@ export const REST_API_ENDPOINTS = {
   QUALITIES: 'qualities',
   SERIES: 'series',
   STUDIOS: 'studios',
+  DIRECTORS: 'directors',
   SEARCH: 'search',
   YEARS: 'years',
 } as const;
@@ -31,7 +32,9 @@ export const MOVIE_SORT_OPTIONS = {
   RELEASE_DATE: 'release_date',
   HOT: 'hot',
   TRENDING: 'trending',
-  POPULAR: 'popular'
+  POPULAR: 'popular',
+  TOP_RATED: 'top_rated',
+  MOST_VIEWED: 'most_viewed'
 } as const;
 
 export type MovieSortOptions = (typeof MOVIE_SORT_OPTIONS)[keyof typeof MOVIE_SORT_OPTIONS];

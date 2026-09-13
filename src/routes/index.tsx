@@ -3,22 +3,24 @@ import { useEffect, useState } from "react";
 import { ArrowUp, ChevronLeft, ChevronRight } from "lucide-react";
 import { Navbar } from "@/components/streamflix/Navbar";
 import { CinematicHeroCarousel } from "@/components/streamflix/CinematicHeroCarousel";
+import { Link } from "@tanstack/react-router";
 import { Row } from "@/components/streamflix/Row";
 import { MovieCard } from "@/components/streamflix/MovieCard";
 import { Footer } from "@/components/streamflix/Footer";
 import { BrowseSkeleton } from "@/components/streamflix/BrowseSkeleton";
-import { ReleaseReminderBanner } from "@/components/streamflix/ReleaseReminderBanner";
-import { SEO_SITE_NAME } from "@/lib/constants";
-import { newMoviesQueryOptions, hotMoviesQueryOptions, trendingMoviesQueryOptions, popularMoviesQueryOptions } from "@/lib/api/tmdb";
+import { SEO_SITE_NAME, MOVIE_SORT_OPTIONS } from "@/lib/constants";
+import { newMoviesQueryOptions, hotMoviesQueryOptions, trendingMoviesQueryOptions, popularMoviesQueryOptions, topRatedMoviesQueryOptions, mostViewedMoviesQueryOptions } from "@/lib/api/tmdb";
 import type { Movie } from "@/lib/types";
 
 export const Route = createFileRoute("/")({
   loader: async ({ context: { queryClient } }) => {
-    const [newMovies, hotMovies, trendingMovies, popularMovies] = await Promise.all([
+    const [newMovies, hotMovies, trendingMovies, popularMovies, topRatedMovies, mostViewedMovies] = await Promise.all([
         queryClient.ensureQueryData(newMoviesQueryOptions()),
         queryClient.ensureQueryData(hotMoviesQueryOptions()),
         queryClient.ensureQueryData(trendingMoviesQueryOptions()),
         queryClient.ensureQueryData(popularMoviesQueryOptions()),
+        queryClient.ensureQueryData(topRatedMoviesQueryOptions()),
+        queryClient.ensureQueryData(mostViewedMoviesQueryOptions()),
       ]);
     
       return {
@@ -26,8 +28,10 @@ export const Route = createFileRoute("/")({
         top10Today: hotMovies?.results,
         top10TrendingWeek: trendingMovies?.results,
         rows: [
-          { title: "New Releases", items: newMovies?.results },
-          { title: "Most Viewed", items: popularMovies?.results },
+          { title: "New Releases", sort: MOVIE_SORT_OPTIONS.NEW, items: newMovies?.results },
+          { title: "Popular", sort: MOVIE_SORT_OPTIONS.POPULAR, items: popularMovies?.results },
+          { title: "Most Viewed", sort: MOVIE_SORT_OPTIONS.MOST_VIEWED, items: mostViewedMovies?.results },          
+          { title: "Top Rated", sort: MOVIE_SORT_OPTIONS.TOP_RATED, items: topRatedMovies?.results },
         ],
       };
   },
@@ -41,7 +45,7 @@ function HomePage() {
   const heroSlides: Movie[] = data.heroSlides;  
   const top10Today: Movie[] = data.top10Today;
   const top10TrendingWeek: Movie[] = data.top10TrendingWeek;
-  const rows: { title: string; items: Movie[] }[] = data.rows;
+  const rows: { title: string; sort: string, items: Movie[] }[] = data.rows;
   const [top10Ref, setTop10Ref] = useState<HTMLDivElement | null>(null);
   const [top10Scroll, setTop10Scroll] = useState({ left: 0, viewport: 0, width: 0 });
   const [trendingWeekRef, setTrendingWeekRef] = useState<HTMLDivElement | null>(null);
@@ -102,9 +106,19 @@ function HomePage() {
       <div className="relative z-10 mt-0 md:mt-12 space-y-6 md:space-y-12">
         {top10Today.length > 0 && (
           <section className="space-y-4 py-4">
-            <h2 className="px-4 sm:px-8 mb-4 sm:mb-6 text-2xl sm:text-3xl font-bold tracking-tight">
-              Top 10 Today
-            </h2>
+            <div className="flex items-end justify-between px-4 sm:px-8 mb-4 sm:mb-6">
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
+                Trending Today
+              </h2>
+              <Link 
+                to="/movies"
+                search={{ page: 1, sort: MOVIE_SORT_OPTIONS.HOT }}
+                className="group flex items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                View More 
+                <ChevronRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+              </Link>
+            </div>
             <div className="relative">
               {top10Scroll.left > 2 && (
                 <button
@@ -137,9 +151,19 @@ function HomePage() {
         )}
         {top10TrendingWeek.length > 0 && (
           <section className="space-y-4 py-4">
-            <h2 className="px-4 sm:px-8 mb-4 sm:mb-6 text-2xl sm:text-3xl font-bold tracking-tight">
-              Trending This Week
-            </h2>
+            <div className="flex items-end justify-between px-4 sm:px-8 mb-4 sm:mb-6">
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
+                Trending This Week
+              </h2>
+              <Link 
+                to="/movies"
+                search={{ page: 1, sort: MOVIE_SORT_OPTIONS.TRENDING }}
+                className="group flex items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                View More 
+                <ChevronRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+              </Link>
+            </div>
             <div className="relative">
               {trendingWeekScroll.left > 2 && (
                 <button
@@ -170,8 +194,8 @@ function HomePage() {
             </div>
           </section>
         )}
-        {rows.map((r: { title: string; items: Movie[] }) => (
-          <Row key={r.title} title={r.title} items={r.items} />
+        {rows.map((r: { title: string; sort: string, items: Movie[] }) => (
+          <Row key={r.title} title={r.title} sort={r.sort} items={r.items} />
         ))}
       </div>
       <div className="flex justify-center px-4 pb-10 pt-2">

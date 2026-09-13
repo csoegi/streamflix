@@ -72,7 +72,7 @@ export function TermListing({
               className="appearance-none h-11 bg-zinc-900/60 border border-zinc-800 rounded-lg pl-4 pr-10 text-sm font-semibold text-zinc-200 cursor-pointer focus:outline-none focus:bg-zinc-900 focus:border-zinc-700 transition"
             >                
               <option value="alpha">Name (A-Z)</option>
-              <option value="videos">Most videos</option>
+              <option value="videos">Most movies</option>
             </select>
             <ChevronDown className="absolute right-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
           </div>
