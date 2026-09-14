@@ -11,8 +11,7 @@ export function TermMovieListingSkeleton({
   cardCount = 12 
 }: TermMovieListingSkeletonProps) {
   return (
-    <div className="min-h-dvh bg-background">
-      <Navbar />
+    <>
       
       {/* Skeleton Banner Layout */}
       <section className="relative flex h-[30vh] items-end overflow-hidden bg-zinc-950/40 border-b border-border">
@@ -46,6 +45,6 @@ export function TermMovieListingSkeleton({
           ))}
         </div>
       </main>
-    </div>
+    </>
   );
 }

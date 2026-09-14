@@ -3,8 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export function MovieSkeleton() {
   return (
-    <div className="min-h-dvh bg-background">
-      <Navbar />
+    <>
       <section className="relative min-h-[70vh] pt-16 md:min-h-[85vh] md:pt-20">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-[52vh] overflow-hidden sm:h-[58vh] md:inset-y-0 md:h-auto">
           <Skeleton className="absolute inset-0 size-full rounded-none bg-surface/60" />
@@ -51,6 +50,6 @@ export function MovieSkeleton() {
           </div>
         </div>
       </section>
-    </div>
+    </>
   );
 }

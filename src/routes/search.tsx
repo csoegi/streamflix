@@ -199,8 +199,6 @@ function SearchPage() {
           )}
         </section>
       </main>
-      
-      <Footer />
     </>
   );
 }

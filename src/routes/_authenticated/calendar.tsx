@@ -20,14 +20,15 @@ export const Route = createFileRoute("/_authenticated/calendar")({
   },
   head: () => ({ meta: [{ title: "New & Coming Soon — StreamFlix" }] }),
   pendingComponent: () => (
+    <>
     <div className="min-h-dvh bg-background">
-      <Navbar />
       <div className="mx-auto max-w-6xl px-4 pt-24 pb-16 sm:px-8">
         <Skeleton className="h-10 w-72 rounded" />
         <Skeleton className="mt-2 h-4 w-52 rounded" />
         <Skeleton className="mt-8 h-96 rounded-lg" />
       </div>
     </div>
+    </>
   ),
   component: CalendarPage,
 });

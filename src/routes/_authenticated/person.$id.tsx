@@ -143,7 +143,6 @@ function PersonPage() {
             </div>
           </div>
         </main>
-        <Footer />
       </>
     );
   }
@@ -161,7 +160,6 @@ function PersonPage() {
             ← Back
           </button>
         </main>
-        <Footer />
       </>
     );
   }

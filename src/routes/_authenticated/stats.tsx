@@ -183,17 +183,17 @@ function StatsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-dvh bg-background">
-        <Navbar />
-        <div className="mx-auto max-w-6xl px-4 pt-28 pb-20 sm:px-8">
-          <div className="space-y-6">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-40 animate-pulse rounded-lg bg-surface" />
-            ))}
+      <>
+        <div className="min-h-dvh bg-background">
+          <div className="mx-auto max-w-6xl px-4 pt-28 pb-20 sm:px-8">
+            <div className="space-y-6">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-40 animate-pulse rounded-lg bg-surface" />
+              ))}
+            </div>
           </div>
         </div>
-        <Footer />
-      </div>
+      </>
     );
   }
 

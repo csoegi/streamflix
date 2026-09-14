@@ -7,9 +7,7 @@ interface TermListingSkeletonProps {
 
 export function TermListingSkeleton({ hasBannerCount = true }: TermListingSkeletonProps) {
   return (
-    <div className="min-h-dvh bg-background">
-      <Navbar />
-      
+    <>      
       {/* Skeleton Banner Layout matching 30vh exactly */}
       <section className="relative flex h-[30vh] items-end overflow-hidden bg-zinc-950/40 border-b border-border">
         <div className="relative z-10 w-full px-4 pb-6 sm:px-8 md:px-16">
@@ -49,6 +47,6 @@ export function TermListingSkeleton({ hasBannerCount = true }: TermListingSkelet
           ))}
         </div>
       </main>
-    </div>
+    </>
   );
 }

@@ -8,8 +8,7 @@ interface BrowseSkeletonProps {
 
 export function BrowseSkeleton({ isHomePage = false } : BrowseSkeletonProps) {
   return (
-    <div className="min-h-dvh bg-background">
-      <Navbar />
+    <>
       <div className="relative min-h-[40vh] h-[50vh] w-full overflow-hidden bg-surface/60 sm:min-h-[400px] sm:h-[65vh] lg:min-h-[550px] lg:h-[85vh]">
         <Skeleton className="absolute inset-0 h-full w-full rounded-none opacity-60" />
         <div className="relative flex h-full items-end justify-center px-4 pb-8 pt-10 text-center sm:px-8 md:items-end md:justify-start">
@@ -32,6 +31,6 @@ export function BrowseSkeleton({ isHomePage = false } : BrowseSkeletonProps) {
           <RowSkeleton key={i} />
         ))}
       </div>
-    </div>
+    </>
   );
 }
