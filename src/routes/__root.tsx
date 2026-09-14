@@ -1,17 +1,11 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import {
-  Outlet,
-  Link,
-  createRootRouteWithContext,
-  useRouter,
-  useLocation,
-  HeadContent,
-  Scripts,
-} from "@tanstack/react-router";
+import { Outlet, Link, createRootRouteWithContext, useRouter, useLocation, HeadContent, Scripts } from "@tanstack/react-router";
 import { useEffect, useRef, type ReactNode } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
-
+import { Navbar } from "@/components/streamflix/Navbar";
+import { MobileBottomNav } from "@/components/streamflix/MobileBottomNav";
+import { Footer } from "@/components/streamflix/Footer";
 import appCss from "../styles.css?url";
 import { registerSW } from "../lib/pwa";
 import { Toaster } from "@/components/ui/sonner";
@@ -25,6 +19,7 @@ import { useNavTracker } from "@/lib/nav-history";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { ReduceMotionProvider } from "@/lib/reduce-motion";
+import { SEO_SITE_NAME } from "@/lib/constants";
 
 function NotFoundComponent() {
   return (
@@ -88,20 +83,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "StreamFlix" },
-      { name: "description", content: "Unlimited movies, TV shows, and more" },
+      { title: `${SEO_SITE_NAME}` },
+      { name: "description", content: "Watch Unlimited JAV & Japanese AV Movie Collections in HD" },
       { name: "theme-color", content: "#E50914" },
       { name: "mobile-web-app-capable", content: "yes" },
-      { property: "og:title", content: "StreamFlix" },
-      { property: "og:description", content: "Unlimited movies, TV shows, and more" },
+      { property: "og:title", content: `${SEO_SITE_NAME}` },
+      { property: "og:description", content: "Watch Unlimited JAV & Japanese AV Movie Collections in HD" },
       { property: "og:type", content: "website" },
-      { property: "og:site_name", content: "StreamFlix" },
+      { property: "og:site_name", content: `${SEO_SITE_NAME}` },
       { property: "og:image", content: metaImageUrl() },
       { property: "og:image:width", content: "1101" },
       { property: "og:image:height", content: "1101" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "StreamFlix" },
-      { name: "twitter:description", content: "Unlimited movies, TV shows, and more" },
+      { name: "twitter:title", content: `${SEO_SITE_NAME}` },
+      { name: "twitter:description", content: "Watch Unlimited JAV & Japanese AV Movie Collections in HD" },
       { name: "twitter:image", content: metaImageUrl() },
     ],
     links: [
@@ -168,7 +163,7 @@ gtag('consent', 'default', {
   }
 })();
 gtag('js', new Date());
-gtag('config', 'G-V9783E9S0W');`,
+gtag('config', 'G-QLTC7VVWPM');`,
           }}
         />
         {children}
@@ -269,7 +264,7 @@ function RootComponent() {
       if (window.location.pathname === offlineRoute) {
         const returnUrl = sessionStorage.getItem("sf:returnUrl");
         sessionStorage.removeItem("sf:returnUrl");
-        window.location.replace(returnUrl || "/browse");
+        window.location.replace(returnUrl || "/");
       }
     };
 
@@ -292,7 +287,30 @@ function RootComponent() {
           <CustomTitleBar />
           <div className="wco-titlebar-padding">
             <Toaster />
-            <Outlet />
+            
+            {/* ========================================================================= */}
+            {/* 🟢 UNIFIED GLOBAL SHELL ENVELOPE: Structures layout bounds precisely      */}
+            {/* ========================================================================= */}
+            <div className="min-h-screen bg-background flex flex-col text-foreground">
+              {/* Global Top Navigation Bar */}
+              <Navbar />
+
+              {/* 
+                Main Content Body Wrapper:
+                'pb-16' secures layout isolation so text stops short of the bottom mobile navigation bar.
+                'md:pb-0' completely removes padding overheads on widescreen monitors.
+              */}
+              <main className="flex-1 pb-16 md:pb-0">
+                <Outlet />
+                
+                {/* Global Footnotes Footer */}
+                <Footer />
+              </main>
+
+              {/* Sticky bottom mobile navigation controls */}
+              <MobileBottomNav />
+            </div>
+
             <CookieConsent />
             <ScreenSaver />
             <Analytics />

@@ -1,11 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Logo } from "@/components/streamflix/Logo";
 import { ContactEmail } from "@/components/streamflix/ContactEmail";
+import { SEO_SITE_NAME } from "@/lib/constants";
 
 export const Route = createFileRoute("/tos")({
   head: () => ({
     meta: [
-      { title: "Terms of Service — StreamFlix" },
+      { title: `${SEO_SITE_NAME} — Terms of Service` },
       { name: "description", content: "StreamFlix Terms of Service." },
     ],
   }),
@@ -14,9 +14,8 @@ export const Route = createFileRoute("/tos")({
 
 function TermsOfServicePage() {
   return (
-    <main className="min-h-dvh bg-background text-foreground px-4 py-8 sm:px-8">
+    <main className="min-h-dvh bg-background text-foreground px-4 py-16 sm:px-8">
       <header className="mx-auto mb-10 flex max-w-4xl items-center justify-between gap-4">
-        <Logo className="text-lg sm:text-xl" />
         <Link
           to="/"
           className="rounded-md border border-border px-4 py-2 text-sm text-muted-foreground hover:border-foreground hover:text-foreground"
@@ -29,9 +28,9 @@ function TermsOfServicePage() {
           <p className="text-xs sm:text-sm uppercase tracking-[0.25em] text-muted-foreground">
             Terms of Service
           </p>
-          <h1 className="text-xl sm:text-4xl font-black">Welcome to StreamFlix</h1>
+          <h1 className="text-xl sm:text-4xl font-black">Welcome to {SEO_SITE_NAME}</h1>
           <p className="text-sm sm:text-base leading-relaxed text-muted-foreground">
-            These Terms of Service ("Terms") govern your access to and use of StreamFlix, including
+            These Terms of Service ("Terms") govern your access to and use of {SEO_SITE_NAME}, including
             any content, functionality, and services offered through our platform. By accessing or
             using the service, you agree to be bound by these Terms. If you do not agree, you may
             not use the service.
@@ -41,7 +40,7 @@ function TermsOfServicePage() {
         <section className="space-y-2 sm:space-y-4">
           <h2 className="text-base sm:text-2xl font-semibold">Acceptance of Terms</h2>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            By creating an account or using StreamFlix in any way, you acknowledge that you have
+            By creating an account or using {SEO_SITE_NAME} in any way, you acknowledge that you have
             read, understood, and agree to be bound by these Terms. We reserve the right to update
             or modify these Terms at any time. Your continued use of the service after any changes
             constitutes acceptance of the new Terms.
@@ -61,7 +60,7 @@ function TermsOfServicePage() {
         <section className="space-y-2 sm:space-y-4">
           <h2 className="text-base sm:text-2xl font-semibold">Use of the Service</h2>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            StreamFlix is provided for personal, non-commercial use. The software is open source and
+            {SEO_SITE_NAME} is provided for personal, non-commercial use. The software is open source and
             licensed under the MIT License, so you're free to use, copy, modify, and share the code.
             When using the service, you agree not to:
           </p>
@@ -88,7 +87,7 @@ function TermsOfServicePage() {
         <section className="space-y-2 sm:space-y-4">
           <h2 className="text-base sm:text-2xl font-semibold">Open Source License</h2>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            The StreamFlix software is distributed under the MIT License. You are permitted to use,
+            The {SEO_SITE_NAME} software is distributed under the MIT License. You are permitted to use,
             copy, modify, merge, publish, and distribute the software, free of charge and without
             restriction, provided that the original copyright notice and license text are included
             in copies or substantial portions of the software.
@@ -98,7 +97,7 @@ function TermsOfServicePage() {
         <section className="space-y-2 sm:space-y-4">
           <h2 className="text-base sm:text-2xl font-semibold">Content and Availability</h2>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            Content available through StreamFlix may change at any time. We do not guarantee that
+            Content available through {SEO_SITE_NAME} may change at any time. We do not guarantee that
             any title will remain accessible or that the service will be available without
             interruption. We are not liable for any loss of content, data, or access resulting from
             service changes, technical failures, or maintenance.
@@ -109,7 +108,7 @@ function TermsOfServicePage() {
           <h2 className="text-base sm:text-2xl font-semibold">Third-Party Links and Services</h2>
           <p className="text-sm leading-relaxed text-muted-foreground">
             The service may contain links to third-party websites or services that are not owned or
-            controlled by StreamFlix. We are not responsible for the content, privacy policies, or
+            controlled by {SEO_SITE_NAME}. We are not responsible for the content, privacy policies, or
             practices of any third-party sites. Your use of third-party services is at your own
             risk.
           </p>
@@ -119,7 +118,7 @@ function TermsOfServicePage() {
           <h2 className="text-base sm:text-2xl font-semibold">Disclaimer of Warranties</h2>
           <p className="text-sm leading-relaxed text-muted-foreground">
             The service is provided on an "as is" and "as available" basis without warranties of any
-            kind, either express or implied. StreamFlix disclaims all warranties, including but not
+            kind, either express or implied. {SEO_SITE_NAME} disclaims all warranties, including but not
             limited to merchantability, fitness for a particular purpose, and non-infringement. We
             do not warrant that the service will be error-free, secure, or uninterrupted.
           </p>
@@ -128,7 +127,7 @@ function TermsOfServicePage() {
         <section className="space-y-2 sm:space-y-4">
           <h2 className="text-base sm:text-2xl font-semibold">Limitation of Liability</h2>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            To the fullest extent permitted by law, StreamFlix and Chris Soe shall not be liable
+            To the fullest extent permitted by law, {SEO_SITE_NAME} and Chris Soe shall not be liable
             for any indirect, incidental, special, consequential, or punitive damages arising out of
             or related to your use of the service, whether based on warranty, contract, tort, or any
             other legal theory.

@@ -2,7 +2,7 @@ const CACHE_NAME = "streamflix-cache-v2";
 const ASSET_CACHE = "streamflix-assets-v2";
 const OFFLINE_URL = "/offline";
 
-const PRECACHE_URLS = ["/", OFFLINE_URL, "/browse"];
+const PRECACHE_URLS = ["/", OFFLINE_URL, "/movies"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

@@ -159,9 +159,9 @@ export function CinematicHeroCarousel({ slides }: { slides: Movie[] }) {
           </p>
           <div className="mx-auto md:mx-0 flex flex-wrap items-center justify-center gap-2 md:justify-start">
             <Link
-              to="/watch/$id"
+              to="/movies/$id"
               params={{ id: s.id }}
-              search={{ source: "wp" } as any} 
+              search={{ play: true } as any} 
               className="inline-flex items-center gap-2 rounded-md bg-white px-3 py-2 text-xs font-semibold text-black transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95 hover:bg-white/85 sm:px-5 sm:py-3 sm:text-sm shadow-lg"
             >
               <Play className="size-4 fill-current sm:size-5" /> Play
@@ -178,7 +178,7 @@ export function CinematicHeroCarousel({ slides }: { slides: Movie[] }) {
       </div>
 
       {/* Slider Navigation Dots */}
-      <div className="absolute bottom-6 inset-x-0 z-10 flex items-center justify-center gap-2 sm:justify-end sm:right-8 sm:inset-x-auto">
+      <div className="absolute bottom-3 inset-x-0 z-10 flex items-center justify-center gap-2 sm:justify-end sm:right-8 sm:inset-x-auto">
         {slides.map((_, idx) => (
           <button
             key={idx}

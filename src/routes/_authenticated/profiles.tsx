@@ -57,7 +57,7 @@ function isValidAvatarUrl(url: string): boolean {
 export const Route = createFileRoute("/_authenticated/profiles")({
   beforeLoad: () => {
     if (isKidsProfile()) {
-      throw redirect({ to: "/browse" });
+      throw redirect({ to: "/" });
     }
   },
   head: () => ({ meta: [{ title: "Who's watching? — StreamFlix" }] }),
@@ -182,7 +182,7 @@ function ProfilesPage() {
       );
       window.dispatchEvent(new Event("profileChanged"));
     } catch {}
-    navigate({ to: "/browse" });
+    navigate({ to: "/" });
   };
 
   const verifyPinAndSelect = async () => {
@@ -258,9 +258,9 @@ function ProfilesPage() {
           <div className="absolute inset-0 bg-gradient-to-b from-background via-background/60 to-background" />
         </div>
       )}
-      <header className="absolute inset-x-0 top-0 px-4 sm:px-12 py-5 z-10">
+      {/* <header className="absolute inset-x-0 top-0 px-4 sm:px-12 py-5 z-10">
         <Logo />
-      </header>
+      </header> */}
       <div className="relative z-20 w-full max-w-4xl px-4 text-center">
         <h1 className="text-3xl font-medium sm:text-5xl">
           {editing ? "Manage Profiles:" : "Who's watching?"}

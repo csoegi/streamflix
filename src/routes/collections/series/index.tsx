@@ -24,8 +24,7 @@ function SeriesPage() {
   const { terms } = Route.useLoaderData();
 
   return (
-    <div className="min-h-dvh bg-background text-foreground">
-      <Navbar />
+   <>
       <CinematicBanner
         themeColor="purple"
         title="Pick a code prefix"
@@ -40,7 +39,6 @@ function SeriesPage() {
         placeholderText="Search series..." 
         paramKeyName="codeSlug"
       />
-      <Footer />
-    </div>
+    </>
   );
 }

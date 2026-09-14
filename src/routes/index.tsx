@@ -35,7 +35,7 @@ export const Route = createFileRoute("/")({
         ],
       };
   },
-  head: () => ({ meta: [{ title: `${SEO_SITE_NAME} - Watch Free JAV & Japanese AV Movie Collections in HD` }] }),
+  head: () => ({ meta: [{ title: `${SEO_SITE_NAME} - Watch Unlimited JAV & Japanese AV Movie Collections in HD` }] }),
   component: HomePage,
   pendingComponent: () => <BrowseSkeleton isHomePage={true}/>,
 });
@@ -100,8 +100,7 @@ function HomePage() {
   };
 
   return (
-    <div className="min-h-dvh bg-background">
-      <Navbar />
+    <>
       <CinematicHeroCarousel slides={heroSlides} />
       <div className="relative z-10 mt-0 md:mt-12 space-y-6 md:space-y-12">
         {top10Today.length > 0 && (
@@ -209,7 +208,6 @@ function HomePage() {
           <ArrowUp className="size-5" />
         </button>
       </div>
-      <Footer />
-    </div>
+    </>
   );
 }

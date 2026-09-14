@@ -1,14 +1,13 @@
-import { createFileRoute, Link, notFound, useLocation,  useNavigate, useRouter } from "@tanstack/react-router";
+import { z } from "zod";
+import { createFileRoute, Link, notFound, useLocation,  useNavigate, useRouter, useSearch } from "@tanstack/react-router";
 import { useMemo, useState, useEffect, useRef } from "react";
-import { Play, Share2, ArrowLeft,  Check,  Bookmark,  Star,  Calendar,  Clock } from "lucide-react";
+import { Play, Share2, ArrowLeft,  Check,  Bookmark,  Star,  Calendar,  Clock, Server, Download, Film, X } from "lucide-react";
 import { toast } from "sonner";
 import { shareContent } from "@/lib/share";
 import { seoMetaFor, siteUrl } from "@/lib/seo";
 import { stepsToUsefulBackTarget } from "@/lib/nav-history";
 import { getWatchHistory, markAsWatched, unmarkWatched } from "@/lib/continue-watching";
 import { isInMyList, toggleMyList } from "@/lib/my-list";
-import { Navbar } from "@/components/streamflix/Navbar";
-import { Footer } from "@/components/streamflix/Footer";
 import { Row } from "@/components/streamflix/Row";
 import { searchKeyword } from "@/lib/api/tmdb";
 import { AgeRatingBadge } from "@/components/streamflix/AgeRatingBadge";
@@ -17,7 +16,12 @@ import { CACHE_TTL, EMPTY_MOVIE_LIST, MOVIE_SORT_OPTIONS, PAGED_LIST_SIZE, SEO_S
 import { movieDetailsQueryOptions } from "@/lib/api/tmdb";
 import { useQuery } from "@tanstack/react-query";
 
+const movieSearchSchema = z.object({
+  play: z.boolean().optional().catch(false),
+});
+
 export const Route = createFileRoute("/movies/$id")({
+  validateSearch: movieSearchSchema,
   loader: async ({ params, context: { queryClient } }) => {
     const movie = await queryClient.ensureQueryData(movieDetailsQueryOptions(params.id));
     if (!movie) {
@@ -68,18 +72,61 @@ export const Route = createFileRoute("/movies/$id")({
 
 function MoviePage() {
   const { movie } = Route.useLoaderData();
+  const params = Route.useParams();   
+  const router = useRouter();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const searchParams = useSearch({ from: "/movies/$id" });
+
   const [descExpanded, setDescExpanded] = useState(false);
   const castScrollerRef = useRef<HTMLDivElement | null>(null);
   const [showPicker, setShowPicker] = useState(true);
   const [castScroll, setCastScroll] = useState({ left: 0, viewport: 0, width: 0 });
 
-  // 1. Prepare space-delimited text keys safely on the client
+  // 1. Load the player dropdown settings state
+  const [activeServerIndex, setActiveServerIndex] = useState(0);
+  const [serverDropdownOpen, setServerDropdownOpen] = useState(false);
+  const [downloadDropdownOpen, setDownloadDropdownOpen] = useState(false);
+
+  const isPlayerOpen = searchParams.play === true || String(searchParams.play) === "true";
+
+  const handleClosePlayer = () => {
+    navigate({
+      to: "/movies/$id",
+      params, // 👈 Satisfies TanStack's 'MakeRequiredPathParams' type check
+      search: (prev: any) => {
+        const next = { ...prev };
+        delete next.play;
+        return next;
+      },
+      replace: true,
+    });
+  };
+
+  const handleOpenPlayer = () => {
+    navigate({
+      to: "/movies/$id",
+      params, // 👈 Satisfies TanStack's 'MakeRequiredPathParams' type check
+      search: (prev: any) => ({ ...prev, play: true }),
+      replace: true,
+    });
+  };
+
+  const currentEmbedHtml = movie.video_embeds?.[activeServerIndex]?.embed_html || movie.video_embed_main || '';
+
+  const getIframeSrc = (htmlString: string): string => {
+    const match = htmlString.match(/src=["'](.*?)["']/);
+    return match ? match[1] : '';
+  };
+
+  const videoPlayerUrl = getIframeSrc(currentEmbedHtml);
+
+  // 2. Fetch related videos
   const actorSearchString = movie.cast?.filter(n => n && n !== "Unknown Cast").join(" ") || "";
   const genreSearchString = movie.genres?.filter(g => g).join(" ") || "";
   const serieSearchString = movie.codePrefix?.trim() || "";
   const studioSearchString = movie.production_company?.trim() || "";
 
-  // 2. Fetch recommendations smoothly with zero server-side blocks
   const relatedActorsQuery = useQuery({
     queryKey: ["search_keyword_actor", { actorSearchString }],
     queryFn: () => searchKeyword({ data: { q: actorSearchString, page: 1, per_page: PAGED_LIST_SIZE.HIGHLIGHT, sort: MOVIE_SORT_OPTIONS.POPULAR } }),
@@ -141,11 +188,8 @@ function MoviePage() {
   }, [movie.id]);
 
 
-  const navigate = useNavigate();
-  const router = useRouter();
-  const location = useLocation();
   const goBack = () => {
-    const steps = stepsToUsefulBackTarget(location.pathname, [`/watch/${movie.id}`]);
+    const steps = stepsToUsefulBackTarget(location.pathname, [`/movies/${movie.id}`]);
     if (steps !== null) {
       router.history.go(-steps);
     } else {
@@ -160,8 +204,7 @@ function MoviePage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col text-foreground">
-      <Navbar />
+    <>
       
       {/* ========================================================================= */}
       {/* AREA 1: 🎬 CINEMATIC HERO BANNER MAIN OVERLAY WRAPPER                    */}
@@ -266,15 +309,21 @@ function MoviePage() {
 
             {/* Action Row Panel Panel controls row */}
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 pt-1 pb-4 border-b border-zinc-800/40 md:border-none">
-              <Link
+              {/* <Link
                 to="/watch/$id"
                 params={{ id: movie.id }}
                 search={{ autoplay: true } as any}
                 className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md bg-white px-6 py-2.5 text-sm font-semibold text-black hover:bg-white/85 shadow-lg transition"
               >
                 <Play className="size-4 fill-current" /> Play
-              </Link>                
-              
+              </Link>                 */}
+              <button
+                type="button"
+                onClick={() => handleOpenPlayer()}
+                className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md bg-white px-6 py-2.5 text-sm font-semibold text-black hover:bg-white/85 shadow-lg transition"
+              >
+                <Play className="size-4 fill-current" /> Play
+              </button>
               <button
                 type="button"
                 onClick={() => {
@@ -523,7 +572,146 @@ function MoviePage() {
           <Row title="Related Movies" items={moviesByRelatedGenres} sort={MOVIE_SORT_OPTIONS.POPULAR} />
         </div>
       )}
-      <Footer />
-    </div>
+
+      {/* ========================================================================= */}
+      {/* 🎞️ IMMERSIVE CINEMATIC VIDEO PLAYER THEATER MODAL                         */}
+      {/* ========================================================================= */}
+      {isPlayerOpen && (
+        <div className="fixed inset-0 z-50 bg-black flex flex-col justify-between overflow-hidden select-none animate-fade-in">
+          
+          {/* FLOATING TOP MENUS BAR HEADER LAYER */}
+          <header className="w-full h-14 sm:h-16 bg-zinc-950/40 border-b border-zinc-900/10 z-50 flex items-center px-4 md:px-8 justify-between shrink-0 pointer-events-auto backdrop-blur-sm">
+            
+            {/* Close modal action button */}
+            <button
+              type="button"
+              onClick={() => handleClosePlayer()}
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-900/60 border border-zinc-800/80 text-zinc-300 text-xs font-semibold hover:text-white hover:bg-zinc-800 transition duration-200 shadow-md"
+            >
+              <X className="w-3.5 h-3.5" /> Close Player
+            </button>
+
+            {/* Video Title Header */}
+            <span className="hidden sm:block text-xs font-semibold text-zinc-300 max-w-sm md:max-w-md truncate drop-shadow-md">
+              {movie.title}
+            </span>
+
+            {/* Multi server selections controllers block */}
+            <div className="flex items-center gap-2">
+              
+              {/* Server drop control */}
+              {movie.video_embeds && movie.video_embeds.length > 0 && (
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setServerDropdownOpen(!serverDropdownOpen);
+                      setDownloadDropdownOpen(false);
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900/60 border border-zinc-800/80 text-zinc-300 text-xs font-semibold hover:text-white transition duration-150"
+                  >
+                    <Server className="w-3.5 h-3.5 text-red-500" />
+                    <span className="max-w-[80px] truncate">
+                      {movie.video_embeds[activeServerIndex]?.server_name || "Server"}
+                    </span>
+                  </button>
+
+                  {serverDropdownOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-48 rounded-xl border border-zinc-800 bg-zinc-950/95 p-1.5 shadow-2xl backdrop-blur-md z-50 flex flex-col space-y-1">
+                      {movie.video_embeds.map((srv: any, idx: number) => (
+                        <button
+                          key={`modal-srv-${idx}`}
+                          type="button"
+                          onClick={() => {
+                            setActiveServerIndex(idx);
+                            setServerDropdownOpen(false);
+                          }}
+                          className={`w-full px-3 py-2 text-left text-xs rounded-lg transition ${
+                            activeServerIndex === idx ? "bg-red-600 text-white font-bold" : "text-zinc-400 hover:bg-zinc-900 hover:text-white"
+                          }`}
+                        >
+                          {srv.server_name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+              {/* Downloads drop control */}
+              {movie.download_links && movie.download_links.length > 0 && (
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDownloadDropdownOpen(!downloadDropdownOpen);
+                      setServerDropdownOpen(false);
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900/60 border border-zinc-800/80 text-zinc-300 text-xs font-semibold hover:text-white transition duration-150"
+                  >
+                    <Download className="w-3.5 h-3.5 text-red-500" />
+                    <span>Download</span>
+                  </button>
+
+                  {downloadDropdownOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-56 rounded-xl border border-zinc-800 bg-zinc-950/95 p-1.5 shadow-2xl backdrop-blur-md z-50 flex flex-col space-y-1 max-h-60 overflow-y-auto">
+                      {movie.download_links.map((dl: any, idx: number) => (
+                        <a
+                          key={`modal-dl-${idx}`}
+                          href={dl.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => setDownloadDropdownOpen(false)}
+                          className="flex items-center justify-between w-full px-3 py-2 text-left text-xs rounded-lg text-zinc-400 hover:bg-zinc-900 hover:text-white transition"
+                        >
+                          <span className="truncate mr-2">{dl.label}</span>
+                          <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 bg-zinc-900 border border-zinc-800 text-zinc-400 uppercase rounded shrink-0">
+                            {dl.quality}
+                          </span>
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+            </div>
+          </header>
+
+          {/* ========================================================================= */}
+          {/* MEDIA STREAM CANVAS ELEMENT ROW: Centers player and fixes aspect gaps      */}
+          {/* ========================================================================= */}
+          <main className="flex-1 relative w-full bg-black z-10 flex flex-col items-center justify-center overflow-hidden">
+            {videoPlayerUrl ? (
+              <iframe
+                src={videoPlayerUrl}
+                /* 
+                  🟢 THE ULTIMATE DESKTOP BUTTONS & HEIGHT FIX:
+                  Mobile: Stays perfectly centered with 'w-full h-auto aspect-video max-h-full'.
+                  Desktop (md:): We remove unconstrained 'h-full aspect-auto' and use bounding calcs.
+                  - Height stops short of clipping using 'md:max-h-[calc(100vh-64px)]'.
+                  - Width scales wide but locks into a true 16:9 box using 'md:max-w-[calc((100vh-64px)*16/9)]'.
+                  
+                  This mathematical box allows the player to expand as wide as your screen allows, 
+                  but halts scaling BEFORE the timeline controls can overflow your monitor edge!
+                */
+                className="w-full h-auto aspect-video max-h-full md:w-full md:h-auto md:aspect-video md:max-h-[calc(100vh-64px)] md:max-w-[calc((100vh-64px)*16/9)] border-0 select-none pointer-events-auto shadow-2xl transition-all duration-300"
+                allowFullScreen
+                scrolling="no"
+                sandbox="allow-scripts allow-same-origin allow-forms"
+                title={`Streaming Node Server - ${movie.video_embeds?.[activeServerIndex]?.server_name || 'Primary Gateway'}`}
+              />
+            ) : (
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-zinc-600 bg-zinc-950 space-y-3">
+                <div className="w-12 h-12 bg-zinc-900 rounded-2xl flex items-center justify-center border border-zinc-850 animate-pulse text-zinc-400">
+                  <Film className="w-6 h-6" />
+                </div>
+                <p className="text-xs font-medium">Initializing media processing gateway streams...</p>
+              </div>
+            )}
+          </main>
+
+        </div>
+      )}
+    </>
   );
 }

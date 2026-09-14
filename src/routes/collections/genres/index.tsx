@@ -24,8 +24,7 @@ function GenresPage() {
   const { terms } = Route.useLoaderData();
 
   return (
-    <div className="min-h-dvh bg-background text-foreground">
-      <Navbar />
+    <>
       <CinematicBanner
         themeColor="emerald"
         title="Pick a genre"
@@ -40,7 +39,6 @@ function GenresPage() {
         placeholderText="Search genres..." 
         paramKeyName="genreSlug"
       />
-      <Footer />
-    </div>
+    </>
   );
 }

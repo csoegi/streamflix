@@ -424,8 +424,7 @@ function SettingsPage() {
   const createdAt = user?.metadata?.creationTime ?? null;
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <Navbar />
+    <>
       <main className="mx-auto max-w-4xl px-4 pt-28 pb-20 sm:px-8">
         <h1 className="text-3xl font-bold tracking-tight">Account</h1>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -911,7 +910,7 @@ function SettingsPage() {
         </section>
 
         <div className="mt-8 text-center">
-          <Link to="/browse" className="text-xs text-muted-foreground hover:text-foreground">
+          <Link to="/movies" className="text-xs text-muted-foreground hover:text-foreground">
             ← Back to browsing
           </Link>
         </div>
@@ -923,7 +922,6 @@ function SettingsPage() {
           onConfirm={saveUploadedAvatar}
         />
       )}
-      <Footer />
-    </div>
+    </>
   );
 }

@@ -127,8 +127,7 @@ function CalendarPage() {
   };
 
   return (
-    <div className="min-h-dvh bg-background">
-      <Navbar />
+    <>
       <main className="mx-auto max-w-6xl px-4 pt-24 pb-16 sm:px-8">
         <div className="flex items-center gap-2 text-primary">
           <CalendarIcon className="size-6" />
@@ -326,7 +325,6 @@ function CalendarPage() {
           {safeItems.length} upcoming titles · Dates from The Movie Database.
         </p>
       </main>
-      <Footer />
-    </div>
+    </>
   );
 }

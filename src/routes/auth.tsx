@@ -279,13 +279,13 @@ function AuthPage() {
       <div className="absolute inset-0 bg-black/70" />
       <div className="relative z-10">
         <header className="flex items-center justify-between px-4 sm:px-12 py-5">
-          <Logo />
+          {/* <Logo />
           <Link
             to="/"
             className="rounded-md border border-border px-4 py-2 text-sm text-muted-foreground hover:border-foreground hover:text-foreground"
           >
             Back to Home
-          </Link>
+          </Link> */}
         </header>
 
         <div className="mx-auto mt-4 max-w-md rounded-md bg-black/75 p-8 sm:p-12">

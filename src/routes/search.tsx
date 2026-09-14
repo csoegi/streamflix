@@ -108,8 +108,7 @@ function SearchPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Navbar />
+    <>
       <main className="flex-1 px-4 pt-24 pb-16 sm:px-8">
         <div className="mx-auto max-w-4xl">
           <div className="relative">
@@ -202,6 +201,6 @@ function SearchPage() {
       </main>
       
       <Footer />
-    </div>
+    </>
   );
 }

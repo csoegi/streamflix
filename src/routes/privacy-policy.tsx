@@ -1,11 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Logo } from "@/components/streamflix/Logo";
 import { ContactEmail } from "@/components/streamflix/ContactEmail";
+import { SEO_SITE_NAME } from "@/lib/constants";
 
 export const Route = createFileRoute("/privacy-policy")({
   head: () => ({
     meta: [
-      { title: "Privacy Policy — StreamFlix" },
+      { title: `${SEO_SITE_NAME} — Privacy Policy` },
       { name: "description", content: "StreamFlix Privacy Policy." },
     ],
   }),
@@ -14,9 +14,8 @@ export const Route = createFileRoute("/privacy-policy")({
 
 function PrivacyPolicyPage() {
   return (
-    <main className="min-h-dvh bg-background text-foreground px-4 py-8 sm:px-8">
+    <main className="min-h-dvh bg-background text-foreground px-4 py-16 sm:px-8">
       <header className="mx-auto mb-10 flex max-w-4xl items-center justify-between gap-4">
-        <Logo className="text-lg sm:text-xl" />
         <Link
           to="/"
           className="rounded-md border border-border px-4 py-2 text-sm text-muted-foreground hover:border-foreground hover:text-foreground"
@@ -31,8 +30,8 @@ function PrivacyPolicyPage() {
           </p>
           <h1 className="text-xl sm:text-4xl font-black">Your Privacy Matters</h1>
           <p className="text-sm sm:text-base leading-relaxed text-muted-foreground">
-            This Privacy Policy explains how StreamFlix collects, uses, discloses, and protects your
-            information when you use the service. By using StreamFlix, you consent to the practices
+            This Privacy Policy explains how {SEO_SITE_NAME} collects, uses, discloses, and protects your
+            information when you use the service. By using {SEO_SITE_NAME}, you consent to the practices
             described in this policy.
           </p>
         </div>
@@ -72,7 +71,7 @@ function PrivacyPolicyPage() {
             We use the collected information to:
           </p>
           <ul className="list-disc pl-6 text-sm leading-relaxed text-muted-foreground space-y-1">
-            <li>Provide, personalize, and improve your experience on StreamFlix.</li>
+            <li>Provide, personalize, and improve your experience on {SEO_SITE_NAME}.</li>
             <li>Recommend content based on your viewing history and preferences.</li>
             <li>
               Communicate with you about service updates, support requests, and policy changes.
@@ -124,7 +123,7 @@ function PrivacyPolicyPage() {
         <section className="space-y-2 sm:space-y-4">
           <h2 className="text-base sm:text-2xl font-semibold">Children's Privacy</h2>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            StreamFlix is not intended for children under the age of 13. We do not knowingly collect
+            {SEO_SITE_NAME} is not intended for children under the age of 13. We do not knowingly collect
             personal information from children. If we become aware that a child under 13 has
             provided us with personal data, we will take steps to delete it promptly.
           </p>

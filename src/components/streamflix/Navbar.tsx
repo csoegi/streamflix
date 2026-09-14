@@ -182,45 +182,52 @@ export function Navbar() {
       <div className="mx-auto flex h-16 items-center gap-6 px-4 sm:px-8">
         <Logo />
         <nav className="hidden md:flex items-center gap-5 text-sm text-muted-foreground">
-           <Link
+          <Link
             to="/"
             preload="intent"
-            className={`hover:text-foreground transition-colors ${pathname.startsWith("/") ? "text-foreground font-semibold" : ""}`}
+            className="hover:text-foreground transition-colors"
+            activeProps={{ className: "text-foreground font-semibold" }}
+            activeOptions={{ exact: true }}
           >
             Home
           </Link>
           <Link
             to="/movies"
             preload="intent"
-            className={`hover:text-foreground transition-colors ${pathname.startsWith("/movies") ? "text-foreground font-semibold" : ""}`}
+            className="hover:text-foreground transition-colors"
+            activeProps={{ className: "text-foreground font-semibold" }}
           >
             Movies
           </Link>
           <Link
             to="/collections/genres"
             preload="intent"
-            className={`hover:text-foreground transition-colors ${pathname.startsWith("/collections/genres") ? "text-foreground font-semibold" : ""}`}
+            className="hover:text-foreground transition-colors"
+            activeProps={{ className: "text-foreground font-semibold" }}
           >
             Genres
           </Link>
           <Link
             to="/collections/series"
             preload="intent"
-            className={`hover:text-foreground transition-colors ${pathname.startsWith("/collections/series") ? "text-foreground font-semibold" : ""}`}
+            className="hover:text-foreground transition-colors"
+            activeProps={{ className: "text-foreground font-semibold" }}
           >
             Series
           </Link>
           <Link
             to="/collections/actresses"
             preload="intent"
-            className={`hover:text-foreground transition-colors ${pathname.startsWith("/collections/actresses") ? "text-foreground font-semibold" : ""}`}
+            className="hover:text-foreground transition-colors"
+            activeProps={{ className: "text-foreground font-semibold" }}
           >
             Actresses
           </Link>
           <Link
             to="/collections/studios"
             preload="intent"
-            className={`hover:text-foreground transition-colors ${pathname.startsWith("/collections/studios") ? "text-foreground font-semibold" : ""}`}
+            className="hover:text-foreground transition-colors"
+            activeProps={{ className: "text-foreground font-semibold" }}
           >
             Studios
           </Link>
@@ -387,11 +394,9 @@ export function Navbar() {
               to="/"
               preload="intent"
               onClick={() => setMobileNavOpen(false)}
-              className={`flex items-center gap-3 rounded-md px-2 py-2.5 text-sm transition-colors ${
-                pathname.startsWith("/")
-                  ? "bg-accent text-foreground font-semibold"
-                  : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
-              }`}
+              className="text-muted-foreground hover:bg-accent/60 hover:text-foreground flex items-center gap-3 rounded-md px-2 py-2.5 text-sm transition-colors"
+              activeProps={{ className: "text-foreground font-semibold" }}
+              activeOptions={{ exact: true }}
             >
               <Compass className="size-4 text-muted-foreground" /> Home
             </Link>
@@ -399,11 +404,8 @@ export function Navbar() {
               to="/movies"
               preload="intent"
               onClick={() => setMobileNavOpen(false)}
-              className={`flex items-center gap-3 rounded-md px-2 py-2.5 text-sm transition-colors ${
-                pathname.startsWith("/movies")
-                  ? "bg-accent text-foreground font-semibold"
-                  : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
-              }`}
+              className="text-muted-foreground hover:bg-accent/60 hover:text-foreground flex items-center gap-3 rounded-md px-2 py-2.5 text-sm transition-colors"
+              activeProps={{ className: "text-foreground font-semibold" }}
             >
               <Compass className="size-4 text-muted-foreground" /> Movies
             </Link>
@@ -411,11 +413,8 @@ export function Navbar() {
               to="/collections/genres"
               preload="intent"
               onClick={() => setMobileNavOpen(false)}
-              className={`flex items-center gap-3 rounded-md px-2 py-2.5 text-sm transition-colors ${
-                pathname.startsWith("/genres")
-                  ? "bg-accent text-foreground font-semibold"
-                  : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
-              }`}
+              className="text-muted-foreground hover:bg-accent/60 hover:text-foreground flex items-center gap-3 rounded-md px-2 py-2.5 text-sm transition-colors"
+              activeProps={{ className: "text-foreground font-semibold" }}
             >
               <Compass className="size-4 text-muted-foreground" /> Genres
             </Link>            
@@ -423,11 +422,8 @@ export function Navbar() {
               to="/collections/series"
               preload="intent"
               onClick={() => setMobileNavOpen(false)}
-              className={`flex items-center gap-3 rounded-md px-2 py-2.5 text-sm transition-colors ${
-                pathname.startsWith("/series")
-                  ? "bg-accent text-foreground font-semibold"
-                  : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
-              }`}
+              className="text-muted-foreground hover:bg-accent/60 hover:text-foreground flex items-center gap-3 rounded-md px-2 py-2.5 text-sm transition-colors"
+              activeProps={{ className: "text-foreground font-semibold" }}
             >
               <Compass className="size-4 text-muted-foreground" /> Series
             </Link>
@@ -435,11 +431,8 @@ export function Navbar() {
               to="/collections/actresses"
               preload="intent"
               onClick={() => setMobileNavOpen(false)}
-              className={`flex items-center gap-3 rounded-md px-2 py-2.5 text-sm transition-colors ${
-                pathname.startsWith("/collections/actresses")
-                  ? "bg-accent text-foreground font-semibold"
-                  : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
-              }`}
+              className="text-muted-foreground hover:bg-accent/60 hover:text-foreground flex items-center gap-3 rounded-md px-2 py-2.5 text-sm transition-colors"
+              activeProps={{ className: "text-foreground font-semibold" }}
             >
               <Compass className="size-4 text-muted-foreground" /> Actresses
             </Link>
@@ -447,11 +440,8 @@ export function Navbar() {
               to="/collections/studios"
               preload="intent"
               onClick={() => setMobileNavOpen(false)}
-              className={`flex items-center gap-3 rounded-md px-2 py-2.5 text-sm transition-colors ${
-                pathname.startsWith("/collections/studios")
-                  ? "bg-accent text-foreground font-semibold"
-                  : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
-              }`}
+              className="text-muted-foreground hover:bg-accent/60 hover:text-foreground flex items-center gap-3 rounded-md px-2 py-2.5 text-sm transition-colors"
+              activeProps={{ className: "text-foreground font-semibold" }}
             >
               <Compass className="size-4 text-muted-foreground" /> Studios
             </Link>

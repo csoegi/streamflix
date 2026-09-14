@@ -79,9 +79,9 @@ function ActionPage() {
       <img src={heroImg} alt="" className="absolute inset-0 size-full object-cover" />
       <div className="absolute inset-0 bg-black/70" />
       <div className="relative z-10">
-        <header className="px-4 sm:px-12 py-5">
+        {/* <header className="px-4 sm:px-12 py-5">
           <Logo />
-        </header>
+        </header> */}
         <div className="mx-auto mt-4 max-w-md rounded-md bg-black/75 p-8 sm:p-12">
           {mode === "resetPassword" ? (
             status === "input" ? (

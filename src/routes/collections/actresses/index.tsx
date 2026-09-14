@@ -24,8 +24,7 @@ function ActressesPage() {
   const { terms } = Route.useLoaderData();
 
   return (
-    <div className="min-h-dvh bg-background text-foreground">
-      <Navbar />
+   <>
       <CinematicBanner
         themeColor="rose"
         title="Pick an actress"
@@ -40,7 +39,6 @@ function ActressesPage() {
         placeholderText="Search actresses..." 
         paramKeyName="actorSlug"
       />
-      <Footer />
-    </div>
+    </>
   );
 }

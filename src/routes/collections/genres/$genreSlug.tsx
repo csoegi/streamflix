@@ -59,8 +59,7 @@ function ExploreGenresPage() {
   } = Route.useLoaderData();
   
   return (
-    <div className="min-h-dvh bg-background">
-      <Navbar />
+    <>
       {movies && movies.length > 0 ? (
         <CinematicHeroBanner
           heroMovie={movies[0]}
@@ -86,7 +85,6 @@ function ExploreGenresPage() {
         activeSort={activeSort}
         paramKeyName="genreSlug"
       />
-      <Footer />
-    </div>
+    </>
   );
 }

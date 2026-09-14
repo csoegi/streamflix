@@ -1,9 +1,10 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { WifiOff, RefreshCw } from "lucide-react";
+import { SEO_SITE_NAME } from "@/lib/constants";
 
 export const Route = createFileRoute("/offline")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Offline — StreamFlix" }] }),
+  head: () => ({ meta: [{ title: `${SEO_SITE_NAME} — Offline` },] }),
   component: OfflinePage,
 });
 
@@ -12,7 +13,7 @@ function OfflinePage() {
   const handleTryAgain = () => {
     const returnUrl = sessionStorage.getItem("sf:returnUrl");
     sessionStorage.removeItem("sf:returnUrl");
-    router.navigate({ to: returnUrl || "/browse" });
+    router.navigate({ to: returnUrl || "/" });
   };
 
   return (

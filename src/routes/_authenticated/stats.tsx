@@ -198,12 +198,11 @@ function StatsPage() {
   }
 
   return (
-    <div className="min-h-dvh bg-background text-foreground">
-      <Navbar />
+    <>
       <main className="mx-auto max-w-6xl px-4 pt-28 pb-20 sm:px-8">
         <div className="mb-8 flex items-center gap-4">
           <Link
-            to="/browse"
+            to="/"
             className="grid size-10 place-items-center rounded-full border border-border bg-card/60 text-muted-foreground transition hover:text-foreground"
           >
             <ArrowLeft className="size-5" />
@@ -398,8 +397,7 @@ function StatsPage() {
           </div>
         )}
       </main>
-      <Footer />
-    </div>
+    </>
   );
 }
 

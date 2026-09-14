@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { Navbar } from "@/components/streamflix/Navbar";
+import { MobileBottomNav } from "@/components/streamflix/MobileBottomNav";
 import { CinematicHeroCarousel } from "@/components/streamflix/CinematicHeroCarousel";
 import { CinematicBanner } from "@/components/streamflix/CinematicBanner";
 import { MovieListing } from "@/components/streamflix/MovieListing";
@@ -48,8 +49,7 @@ function MoviesPage() {
        activeSort 
      } = Route.useLoaderData();
   return (
-    <div className="min-h-dvh bg-background">
-      <Navbar />
+    <>
       {movies && movies.length > 0 ? (
         <CinematicHeroCarousel slides={heroSlides} />
       ) :(
@@ -69,7 +69,6 @@ function MoviesPage() {
           activeSort={activeSort}
           searchQuery=""
         />
-      <Footer />
-    </div>
+    </>
   );
 }

@@ -24,8 +24,7 @@ function StudiosPage() {
   const { terms } = Route.useLoaderData();
 
   return (
-    <div className="min-h-dvh bg-background text-foreground">
-      <Navbar />
+    <>
       <CinematicBanner
         themeColor="blue"
         title="Pick a studio"
@@ -40,7 +39,6 @@ function StudiosPage() {
         placeholderText="Search studios..." 
         paramKeyName="studioSlug"
       />
-      <Footer />
-    </div>
+    </>
   );
 }

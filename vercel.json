@@ -1,7 +1,7 @@
 {
   "headers": [
     {
-      "source": "/watch/:id",
+      "source": "/movies/:id",
       "headers": [
         {
           "key": "Content-Security-Policy",

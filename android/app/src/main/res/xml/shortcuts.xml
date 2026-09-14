@@ -34,6 +34,6 @@
             android:action="android.intent.action.VIEW"
             android:targetPackage="com.itiswayneee.streamflix"
             android:targetClass="com.itiswayneee.streamflix.MainActivity"
-            android:data="https://streamflix.dpdns.org/browse" />
+            android:data="https://streamflix.dpdns.org" />
     </shortcut>
 </shortcuts>

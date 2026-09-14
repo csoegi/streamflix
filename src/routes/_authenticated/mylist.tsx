@@ -54,8 +54,7 @@ function MyListPage() {
   const items = kidsMode ? filterKidsContent(list.map((e) => e.movie)) : list.map((e) => e.movie);
 
   return (
-    <div className="min-h-dvh bg-background">
-      <Navbar />
+    <>
       <main className="mx-auto max-w-[1800px] px-4 pt-24 pb-16 sm:px-8">
         <h1 className="flex items-center gap-2 text-2xl font-bold sm:text-3xl">
           <Bookmark className="size-6 fill-current text-primary" /> My List
@@ -75,7 +74,7 @@ function MyListPage() {
               Tap the bookmark button on any title to save it here.
             </p>
             <Link
-              to="/browse"
+              to="/movies"
               className="mt-4 inline-block rounded bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
             >
               Browse Movies & Shows
@@ -89,7 +88,6 @@ function MyListPage() {
           </div>
         )}
       </main>
-      <Footer />
-    </div>
+    </>
   );
 }

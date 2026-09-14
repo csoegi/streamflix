@@ -127,8 +127,7 @@ function PersonPage() {
 
   if (loading) {
     return (
-      <div className="min-h-dvh bg-background">
-        <Navbar />
+      <>
         <main className="px-4 pt-28 pb-16 sm:px-8">
           <div className="mx-auto max-w-6xl animate-pulse space-y-6">
             <div className="mb-4">
@@ -145,14 +144,13 @@ function PersonPage() {
           </div>
         </main>
         <Footer />
-      </div>
+      </>
     );
   }
 
   if (!data) {
     return (
-      <div className="min-h-dvh bg-background">
-        <Navbar />
+      <>
         <main className="px-4 pt-28 pb-16 sm:px-8 text-center text-muted-foreground">
           <p>Person not found.</p>
           <button
@@ -164,13 +162,12 @@ function PersonPage() {
           </button>
         </main>
         <Footer />
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="min-h-dvh bg-background">
-      <Navbar />
+    <>
       <main className="px-4 pt-28 pb-16 sm:px-8">
         <div className="mx-auto max-w-6xl">
           <button
@@ -237,7 +234,6 @@ function PersonPage() {
           <CreditSection title="TV Shows" credits={data.tvShows} countLabel="shows" />
         </div>
       </main>
-      <Footer />
-    </div>
+    </>
   );
 }

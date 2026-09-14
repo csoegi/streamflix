@@ -147,8 +147,7 @@ function HistoryPage() {
   };
 
   return (
-    <div className="min-h-dvh bg-background">
-      <Navbar />
+    <>
       <main className="mx-auto max-w-6xl px-4 pt-24 pb-12 sm:px-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl font-bold flex items-center gap-2 sm:text-3xl">
@@ -176,7 +175,7 @@ function HistoryPage() {
             <Film className="mx-auto size-12 text-muted-foreground/50 mb-3" />
             <p className="text-muted-foreground">No watch history yet.</p>
             <Link
-              to="/browse"
+              to="/movies"
               className="mt-4 inline-block rounded bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
             >
               Browse Movies & Shows
@@ -187,8 +186,9 @@ function HistoryPage() {
             {movies.map((item) => (
               <Link
                 key={item.id}
-                to="/watch/$id"
+                to="/movies/$id"
                 params={{ id: item.id }}
+                search={{ play: true } as any}
                 className="flex items-center gap-4 rounded-lg border border-border bg-surface/40 p-3 transition-colors hover:bg-surface/80 group sm:p-4"
               >
                 <div className="relative shrink-0">
@@ -290,13 +290,14 @@ function HistoryPage() {
                       {group.episodes.map((ep) => (
                         <Link
                           key={ep.id}
-                          to="/watch/$id"
+                          to="/movies/$id"
                           params={{ id: group.baseId }}
-                          search={
-                            ep.season != null && ep.episode != null
-                              ? { season: ep.season, episode: ep.episode }
-                              : {}
-                          }
+                          search={{ play: true } as any}
+                          // search={
+                          //   ep.season != null && ep.episode != null
+                          //     ? { season: ep.season, episode: ep.episode }
+                          //     : {}
+                          // }
                           className="flex items-center gap-3 px-4 py-2.5 sm:px-6 transition-colors hover:bg-surface/60 group/ep"
                         >
                           <div className="shrink-0 w-8 h-8 rounded bg-white/10 flex items-center justify-center">
@@ -335,7 +336,6 @@ function HistoryPage() {
           </div>
         )}
       </main>
-      <Footer />
-    </div>
+    </>
   );
 }
