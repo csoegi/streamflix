@@ -123,7 +123,7 @@ function MoviePage() {
 
   // 2. Fetch related videos
   const actorSearchString = movie.cast?.filter(n => n && n !== "Unknown Cast").join(" ") || "";
-  const genreSearchString = movie.genres?.filter(g => g).join(" ") || "";
+  const genreSearchString = movie.genres?.slice(0, 3).filter(g => g).join(" ") || "";
   const serieSearchString = movie.codePrefix?.trim() || "";
   const studioSearchString = movie.production_company?.trim() || "";
 
@@ -554,22 +554,22 @@ function MoviePage() {
       {/* ========================================================================= */}
       {moviesByRelatedActors.length > 0 && (
         <div className="space-y-2 pb-4">
-          <Row title="Same Actress" items={moviesByRelatedActors} sort={MOVIE_SORT_OPTIONS.POPULAR} />
+          <Row title="Same Actress" items={moviesByRelatedActors} searchKeyword={actorSearchString} sort={MOVIE_SORT_OPTIONS.NEW} />
         </div>
       )}
       {moviesByRelatedStudio.length > 0 && (
         <div className="space-y-2 pb-4">
-          <Row title="Same Producer" items={moviesByRelatedStudio} sort={MOVIE_SORT_OPTIONS.POPULAR} />
+          <Row title="Same Producer" items={moviesByRelatedStudio} searchKeyword={studioSearchString} sort={MOVIE_SORT_OPTIONS.NEW} />
         </div>
       )}
       {moviesByRelatedSerie.length > 0 && (
         <div className="space-y-2 pb-4">
-          <Row title="Related Series" items={moviesByRelatedSerie} sort={MOVIE_SORT_OPTIONS.POPULAR} />
+          <Row title="Related Series" items={moviesByRelatedSerie} searchKeyword={serieSearchString} sort={MOVIE_SORT_OPTIONS.NEW} />
         </div>
       )}
       {moviesByRelatedGenres.length > 0 && (
         <div className="space-y-2 pb-4">
-          <Row title="Related Movies" items={moviesByRelatedGenres} sort={MOVIE_SORT_OPTIONS.POPULAR} />
+          <Row title="Related Movies" items={moviesByRelatedGenres} searchKeyword={genreSearchString} sort={MOVIE_SORT_OPTIONS.NEW} />
         </div>
       )}
 

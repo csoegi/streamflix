@@ -3,7 +3,6 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { Movie } from "@/lib/types";
 import { MovieCard } from "./MovieCard";
 import { Link } from "@tanstack/react-router";
-import {  MOVIE_SORT_OPTIONS } from "@/lib/constants";
 
 const BASE_CARD_W = 175;
 const SM_CARD_W = 220;
@@ -18,13 +17,15 @@ export function Row({
   reasons,
   reasonLinks,
   hideTitle = false,
+  searchKeyword,
 }: {
   title: string;
   sort?: string;
   items: Movie[];
   reasons?: Record<string, string>;
   reasonLinks?: Record<string, string>;
-  hideTitle?: boolean;
+  hideTitle?: boolean;  
+  searchKeyword?: string;
 }) {
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   const [scrollLeft, setScrollLeft] = useState(0);
@@ -109,14 +110,25 @@ export function Row({
             {title}
           </h2>
         )}
-        <Link 
-          to="/movies"
-          search={{ page: 1, sort: sort }}
-          className="group flex items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-        >
-          View More 
-          <ChevronRight className="size-4 transition-transform group-hover:translate-x-0.5" />
-        </Link>
+        {searchKeyword && searchKeyword.length > 0 ? (
+          <Link 
+            to="/search"
+            search={{ q: searchKeyword, page: 1, sort: sort }}
+            className="group flex items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            View More 
+            <ChevronRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+          </Link>
+        ) : (
+          <Link 
+            to="/movies"
+            search={{ page: 1, sort: sort }}
+            className="group flex items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            View More 
+            <ChevronRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+          </Link>
+        )}
       </div>
       <div className="relative">
         {isSm && canScrollLeft && (
